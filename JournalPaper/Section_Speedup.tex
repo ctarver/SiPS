@@ -1,8 +1,13 @@
 \section{Improving Convergence Speed of the Proposed DPD}
 \label{sec:ConvergenceSpeed}
-In the previous section, a trade-off was made between hardware complexity and convergence time. We introduce two methods to help relax the extra time that is necessary to converge sequentially. Firstly, we modify the learning rate, and secondly, we modify the starting coefficients.
+In the previous section, a trade-off was made between hardware complexity and convergence time. We introduce two methods to help relax the extra time that is necessary to converge sequentially. 
+Firstly, we modify the learning rate, and secondly, we modify the starting coefficients.
 
-The first modification involves adjusting the learning rate $\mu$ in (\ref{eq:BlockAdaptive}) depending on the residual correlation between the observed spurious IMD at the PA output and the nonlinear basis functions representing this IMD. We allow $\mu$ to take on two values, $\mu_1$ and $\mu_2$ where $\mu_1 > \mu_2$. This ensures fast convergence while not sacrificing the steady state error. We also establish a threshold, $\gamma$, and a confidence metric, $\nu$. The change to $\mu$ is decided as shown in Algorithm \ref{alg:mu}.
+The first modification involves adjusting the learning rate $\mu$ in (\ref{eq:BlockAdaptive}) depending on the residual correlation between the observed spurious IMD at the PA output and the nonlinear basis functions representing this IMD.
+ We allow $\mu$ to take on two values, $\mu_1$ and $\mu_2$ where $\mu_1 > \mu_2$. 
+ This ensures fast convergence while not sacrificing the steady state error. 
+ We also establish a threshold, $\gamma$, and a confidence metric, $\nu$. 
+ The change to $\mu$ is decided as shown in Algorithm \ref{alg:mu}.
 \begin{algorithm}[h]
 \SetAlgoLined
 \textit{count} = 0\;
@@ -24,8 +29,13 @@ $\mu = \mu_1$\;
 \caption{Adaptive $\mu$ update procedure.}
 \label{alg:mu}
 \end{algorithm}
-The threshold, $\gamma$, and the confidence metric $\nu$ are chosen based on experimental results over a wide range of carrier allocation scenarios and power levels. This helps ensure that the basis functions and the spurious IMD have actually decorrelated, and that we do not switch $\mu$ too soon due to fluctuations in the correlation.
+The threshold, $\gamma$, and the confidence metric $\nu$ are chosen based on experimental results over a wide range of carrier allocation scenarios and power levels. 
+This helps ensure that the basis functions and the spurious IMD have actually decorrelated, and that we do not switch $\mu$ too soon due to fluctuations in the correlation.
 
-The second modification involves adjusting the starting point for the DPD training. In  (\ref{eq:BlockAdaptive}), $\bar{\boldsymbol{\alpha}}(0) = \mathbf{0}$. If we were to start closer to the final coefficient, there would be less change necessary and hence the convergence time could be much faster.  We propose storing the final coefficients from various transmit scenarios. Then, whenever the same or a similar transmit scenario is used again, we can retrain by starting from the previous value. 
+The second modification involves adjusting the starting point for the DPD training. 
+In (\ref{eq:BlockAdaptive}), $\bar{\boldsymbol{\alpha}}(0) = \mathbf{0}$. 
+If we were to start closer to the final coefficient, there would be less change necessary and hence the convergence time could be much faster. 
+We propose storing the final coefficients from various transmit scenarios. 
+Then, whenever the same or a similar transmit scenario is used again, we can retrain by starting from the previous value. 
 The previous coefficients should be similar, but retraining allows us to overcome possible variations due to temperature, power levels, etc. 
 
