@@ -7,7 +7,7 @@ For these experiments, the DPD processing is done on the host CPU, but the broad
 
 \begin{figure}[]
 \centering
-\vspace{0.5cm}
+%\vspace{0.5cm}
 \includegraphics[width=0.75\columnwidth]{Figures/Setup.jpg}
 \caption{The \textsc{Warp}v3 board interfaces with \textsc{Matlab} via an Ethernet cable connected to a PC. The TX port is directly connected to the RX port with 40 dB of inline attenuation for DPD training.}
 \label{fig:exp_setup}
@@ -62,7 +62,7 @@ From these figures, it is evident that the final result is equivalent and the on
 \caption{PSD result when using the concurrent and sequentially trained coefficients to suppress the IM3+ spur. 
 	This shows nearly identical performance between the methods.}
 \label{fig:IterativeSpectrumvsConcurrent}
-\vspace{-10pt}
+%\vspace{-10pt}
 \end{figure}
 
 \subsection{Speed-up Methods}
@@ -83,28 +83,23 @@ The values were determined experimentally to what worked well for a variety of s
 	As training progresses the correlation decreases. 
 	Once it is below the threshold for a total number of times greater than the confidence metric, we change to the lower learning rate.}
 \label{fig:Convergence_Mu}
-\vspace{-10pt}
+%\vspace{-10pt}
 \end{figure}
 
-We then tested the concept of starting the DPD coefficient training from previous values. 
-Using the same signal conditions as the experiment from Fig. 6, we increased the transmit power by approximately 2 dB.
- By doing so, we were operating in a more nonlinear region of the PA where we would have more distortion to overcome. 
- When we broadcasted at the new power levels, the need to retrain was apparent. 
- Without DPD, the IM3+ power was 20 dB lower than the main carriers. When using the final, converged coefficients from Fig. 6 that we obtained while training at a lower power at the new, higher transmit power, we still see suppression of the IM3+ spur. 
- However, it was only about 11 dB of suppression. 
- We then retrained but used the old, stale coefficients from Fig. 6 as a starting point. 
- By doing so, we were able to reduce the amount of time necessary for convergence by a factor of 2 and obtain approximately 20 dB of suppression. 
- The convergence of the coefficients from this experiment is shown in Fig. \ref{fig:UseOldCoeff_IncreasePower_Convergence}. 
+We then tested the concept of starting the DPD coefficient at a value based off the interpolation of other trained values. 
+When using WARPLab, there is an RF gain parameter that sets the gain for the PA. This value is an integer between zero and sixty-three with approximately half a dB of gain per increase unit. We started with an RF gain parameter of 45 where we trained from a starting point of zero. Then, we increased the RF gain to 55 where we again trained from 0. At each, the coefficients converged smoothly with sufficient suppression. 
+
+We then choose to work at an RF gain of 50. We linearly interpolated from the two values previously stored. We then started training from this point. The training is shown in Figure \ref{fig:Interpolate}. Based off the sequential, LMS training, a small update to the interpolation guess is made. 
 
 \begin{figure}[t!] 
 \centering
-\includegraphics[width=0.9\columnwidth]{Figures/UseOldCoeff_IncreasePower_Convergence}
-\caption{Convergence of the DPD coefficients when training starts at previously obtained coefficients.}
-\label{fig:UseOldCoeff_IncreasePower_Convergence}
-\vspace{-10pt}
+\includegraphics[]{Figures/Interpolate}
+\caption{Convergence of the DPD coefficients after interpolating from previous coefficients.}
+\label{fig:Interpolate}
+%\vspace{-10pt}
 \end{figure}
 
-This concept can be further extended to include interpolating estimated DPD coefficients. As we store DPD coefficients for values, we build a table of DPD coefficients for varying PA gain parameters. Whenever we attempt to broadcast at a gain between two that are already in the table, we simply interpolate from the two. 
+ As we continue to transmit under various conditions, the interpolations become more accurate. Eventually, a complete table of DPD coefficients is formed. Then whenever we need to broadcast, we can simply load the previous coefficients and quickly update them to account for small fluctuations if needed. 
 
 
 
