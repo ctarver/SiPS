@@ -5,7 +5,7 @@ The methods presented previously in the paper were tested using the \textsc{Warp
 A photo of the experimental setup is shown in Fig. \ref{fig:exp_setup}. 
 For these experiments, the DPD processing is done on the host CPU, but the broadcasting is done on the \textsc{Warp} radio hardware which includes the Maxim MAX2829 transceiver and the Anadigics AWL6951 PA.
 
-\begin{figure}[t!]
+\begin{figure}[]
 \centering
 \vspace{0.5cm}
 \includegraphics[width=0.75\columnwidth]{Figures/Setup.jpg}
@@ -60,7 +60,7 @@ From these figures, it is evident that the final result is equivalent and the on
 \centering
 \includegraphics[width=0.9\columnwidth]{Figures/IterativeSpectrumvsConcurrent}
 \caption{PSD result when using the concurrent and sequentially trained coefficients to suppress the IM3+ spur. 
-	This shows nearly identical performance between the two methods.}
+	This shows nearly identical performance between the methods.}
 \label{fig:IterativeSpectrumvsConcurrent}
 \vspace{-10pt}
 \end{figure}
