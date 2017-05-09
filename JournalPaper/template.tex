@@ -105,7 +105,7 @@ Digital predistortion (DPD) is an effective way of mitigating spurious emission 
 In this paper an iterative version of the IM3 sub-band DPD, proposed earlier by the authors, is presented. 
 The DPD learning is iterated between the higher and lower IM3 sub-bands until a satisfactory performance is achieved for both of them. 
 A sequential DPD learning procedure is also presented in order to reduce the hardware complexity when higher order nonlinearities are incorporated in the DPD learning. 
-Improvements on the convergence speed of the adaptive DPD learning are also achieved via incorporating a variable learning rate and training from previous values. 
+Improvements on the convergence speed of the adaptive DPD learning are also achieved via incorporating a variable learning rate and interpolation of previously trained DPD coefficients. 
 A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excellent suppression of the targeted spurious emissions. 
 \keywords{Adaptive filters \and carrier aggregation \and digital predistortion \and nonlinear distortion \and power amplifier \and software-defined radio \and spectrally-agile radio \and spurious emission. }
 % \PACS{PACS code1 \and PACS code2 \and more}
@@ -131,7 +131,7 @@ In summary, the main novelty of this paper is as follows:
 	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity.
 	\item In order to improve the convergence speed of the proposed solution, two modifications have been introduced in this paper. 
 	The first is using a variable learning rate during the DPD coefficient learning to have a fast convergence at the initial phase of the learning while not sacrificing the steady state error. 
-	The second modification is that the DPD coefficients are stored once they are converged, and act as a starting point for learning once the same carrier configuration is transmitted again.
+	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning once the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
 	\item A \textsc{Warp}Lab implementation of the proposed solution is done demonstrating effective performance of the proposed solution using real hardware equipment. 
 \end{itemize}
 
@@ -306,7 +306,9 @@ Fig. \ref{fig:SystemFlowChart} presents a flow chart illustrating the overall DP
 In case both IM3 sub-bands are required to be suppressed, an iterative IM3$\pm$ third-order sub-band DPD learning step is performed after which the spurious emissions are checked to see whether they already meet the emission requirements or not. 
 If they do not satisfy emission requirements, an additional nonlinearity order is added with iterative IM3$\pm$ learning, and so on. 
 In all the learning phases, the DPD learning rate $\mu$ is varied according to the residual correlation between the observed IMD emissions and the corresponding basis function(s), in order to improve the learning speed, as explained in Algorithm \ref{alg:mu}. 
-Also whenever the DPD coefficients converge, they can be stored in the memory as starting points when the transmission scenarios are repeated. 
+Also whenever the DPD coefficients converge, they can be stored in the memory.
+This serves as a starting point for whenever the transmission scenarios are repeated. 
+Also, whenever we do a new scenario, we can use the values from other scenarios to interpolate an estimate of the DPD coefficients for the new scenario. This serves as a starting point to help rapidly converge.
 In the next section, comprehensive experimental results are presented using the \textsc{Warp}Lab setup demonstrating the effectiveness of the proposed DPD solution.
 
 \import{./}{Section_WarpLabResults.tex}
