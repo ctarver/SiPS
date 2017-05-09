@@ -67,7 +67,7 @@ for Sample = 1:DPD_FilteringBlockSize:NumSamples
             if confidence > 7
                 Mu=0.7/norm_basis;
             else
-                Mu=4/norm_basis;
+                Mu=4;
             end
             MU_vector = [MU_vector ; Mu];
             Correlate = [Correlate; MeanCorrelation];             

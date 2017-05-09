@@ -37,17 +37,32 @@ IM3_order_5 = 0;
 IM3_order_7 = 0;
 IM3_order_9 = 1;
 
-USE_WARP = 0;                %Use a WARP Board
+USE_WARP = 1;                %Use a WARP Board
 DO_Training = 1;             %Train coefficients or run code with predefined coefficients.
-DPD_LearningRate = 2;         % Decorrelating DPD Learning Rate
+DPD_LearningRate = 1;         % Decorrelating DPD Learning Rate
 DPD_LearningBlockSize  = 528;    % Decorrelating DPD Learning Block size
 DPD_FilteringBlockSize = 1024;    % Decorrelating DPD Filtering Block size
 NumLearningSamples = 0.5*200000;
 
-IM3_ThirdOrder_Coeffs   =  38.979557888519977 +10.348828316998135i;
-IM3_FifthOrder_Coeffs   =  3.529643549765225 + 3.793466775897521i;
-IM3_SeventhOrder_Coeffs =  -6.622302039996597 - 1.863486991194617i;
-IM3_NinthOrder_Coeffs   =  0;%3.8273 + 0.1256i;
+
+% Gain 3,45
+%  IM3_ThirdOrder_Coeffs   =    6.4367 - 1.6282i;%39.2965 +10.5928i;
+%  IM3_FifthOrder_Coeffs   =    7.5791 - 0.6598i;%1.5774 + 3.5535i;
+%  IM3_SeventhOrder_Coeffs =        -4.4727 + 0.6793i;%  -7.2355 - 2.0117i;
+%  IM3_NinthOrder_Coeffs   =  0;%3.8273 + 0.1256i;
+
+%Gain 3,55
+% IM3_ThirdOrder_Coeffs   =    40.6080 + 1.2534i;%39.2965 +10.5928i;
+% IM3_FifthOrder_Coeffs   =    -4.7023 + 3.2298i;%1.5774 + 3.5535i;
+% IM3_SeventhOrder_Coeffs =    -7.1796 - 0.9978i;%  -7.2355 - 2.0117i;
+% IM3_NinthOrder_Coeffs   =  0;%3.8273 + 0.1256i;
+
+%Interpolate for 3,50
+ IM3_ThirdOrder_Coeffs   =  23.5223 - 0.1874i;%39.2965 +10.5928i;
+ IM3_FifthOrder_Coeffs   =  1.4384 + 1.2850i;%1.5774 + 3.5535i;
+ IM3_SeventhOrder_Coeffs =   -5.8262 - 0.1593i;%  -7.2355 - 2.0117i;
+ IM3_NinthOrder_Coeffs   =  0;%3.8273 + 0.1256i;
+
 
 IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
 IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
@@ -57,20 +72,20 @@ IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
 WARP_ID = 00031;
 
 if(USE_WARP)
-   Max_input_scale_factor = 0.9;   %Scale the input between 0 and 1
-   Dont_trust_cyclosync = 0;
+   Max_input_scale_factor = 0.8;   %Scale the input between 0 and 1
+   Dont_trust_cyclosync = 1;
    
    % RX variables
    Channel_RX = 6;
-   RxGainRF   = 1;  % Rx RF Gain in [1:3] (ignored if USE_AGC is true)
-   RxGainBB   = 10;  % Rx Baseband Gain in [0:31] (ignored if USE_AGC is true)
-   RX_LPF     = 3;  % [0,1,2,3] for approx ![7.5,9.5,14,18]MHz corner
+   RxGainRF   = 2;  % Rx RF Gain in [1:3] (ignored if USE_AGC is true)
+   RxGainBB   = 14; % Rx Baseband Gain in [0:31] (ignored if USE_AGC is true)
+   RX_LPF     = 2;  % [0,1,2,3] for approx ![7.5,9.5,14,18]MHz corner
    
    % TX variables
    Channel_TX = 6;
    TxGainBB   = 3;  % [0,1,2,3] for approx ![-5, -3, -1.5, 0]dB baseband gain
-   TXGainRF   = 52; % [0:63] for approx [0:31]dB RF gain
-   TX_LPF     = 2;  % [1,2,3] for approx [12,18,24]MHz corner frequencies ([24,36,48]MHz bandwidths)
+   TXGainRF   = 50; % [0:63] for approx [0:31]dB RF gain
+   TX_LPF     = 3;  % [1,2,3] for approx [12,18,24]MHz corner frequencies ([24,36,48]MHz bandwidths)
    
    global Spacing phase USE_WARP;
    Spacing = (Channel_RX - Channel_TX) * (5*10^6); %5 MHz per channel
@@ -95,7 +110,7 @@ if LTE_Bandwidth == 10
    NRB2 = 50;            % Number of RB allocated to second CC
 end
 
-CarrierSpacing = 8;%20/3; % Spacing in MHz between the 2 CC
+CarrierSpacing = 6;%20/3; % Spacing in MHz between the 2 CC
 
 IM3_Freq = 3*(CarrierSpacing/2);
 IM5_Freq = 5*(CarrierSpacing/2);
