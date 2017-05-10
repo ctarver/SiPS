@@ -216,19 +216,29 @@ These aspects are particularly important for mobile devices, which is the main s
 
 \section{Sequential Learning of IM3 sub-band DPD Coefficients}
 \label{sec:Sequential_Learning}
-A detailed analysis of the nonlinear distortions at the IM3 sub-band has been done in \cite{TMTT_SubbandDPD} when a ninth-order PA is excited with a dual carrier signal as in (\ref{eq:PA_In}). 
+A detailed analysis of the nonlinear distortions at the IM3 and IM5 sub-band has been done in \cite{TMTT_SubbandDPD} when a ninth-order PA is excited with a dual carrier signal as in (\ref{eq:PA_In}). 
 We hereby present the distortion components up to the ninth order at the IM3+ sub-band, which read
 \begin{align}
 \small
-u^+_3(n) &= x_2^*(n)x_1^2(n), \label{eq:IM3_BasisFunctions1}\\
-u^+_5(n) &= u^+_3(n) \times (2 |x_1(n)|^2 + 3 |x_2(n)|^2),  \label{eq:IM3_BasisFunctions2}\\
-u^+_7(n) &= u^+_3(n) \times (3 |x_1(n)|^4 + 6 |x_2(n)|^4 \nonumber\\
+u^{3+}_3(n) &= x_2^*(n)x_1^2(n), \label{eq:IM3_BasisFunctions1}\\
+u^{3+}_5(n) &= u^+_3(n) \times (2 |x_1(n)|^2 + 3 |x_2(n)|^2),  \label{eq:IM3_BasisFunctions2}\\
+u^{3+}_7(n) &= u^+_3(n) \times (3 |x_1(n)|^4 + 6 |x_2(n)|^4 \nonumber\\
 & \quad + 12 |x_1(n)|^2 |x_2(n)|^2) \label{eq:IM3_BasisFunctions3},\\
-u^+_9(n) &= u^+_3(n) \times (4 |x_1(n)|^6 + 10|x_2(n)|^6 \nonumber\\
+u^{3+}_9(n) &= u^+_3(n) \times (4 |x_1(n)|^6 + 10|x_2(n)|^6 \nonumber\\
 &\quad + 30 |x_1(n)|^4 |x_2(n)|^2 + 40 |x_1(n)|^2 |x_2(n)|^4). \label{eq:IM3_BasisFunctions4}
 \end{align}
 \normalsize
-Similarly, for the IM3- sub-band, the distortions terms $u^-_3(n)$ are simply obtained by interchanging $x_1(n)$ and $x_2(n)$ in (\ref{eq:IM3_BasisFunctions1})-(\ref{eq:IM3_BasisFunctions4}).
+Similarly, for the IM3- sub-band, the distortions terms $u^{3-}(n)$ are simply obtained by interchanging $x_1(n)$ and $x_2(n)$ in (\ref{eq:IM3_BasisFunctions1})-(\ref{eq:IM3_BasisFunctions4}).
+The distortion components up to the ninth order at the IM5+ sub-band read
+\begin{align}
+\small
+u^{5+}_5(n) &= (x_2^*(n))^2x_1^3(n),\\
+u^{5+}_7(n) &= u^{5+}_5(n) \times (4 |x_1(n)|^2 + 3 |x_2(n)|^2),  \\
+u^{5+}_9(n) &= u^{5+}_7(n) \times (10 |x_1(n)|^4 + 6 |x_2(n)|^4 \nonumber\\
+& \quad + 20 |x_1(n)|^2 |x_2(n)|^2),\\
+\end{align}
+\normalsize
+Similarly, for the IM5- sub-band, the distortions terms $u^{5-}(n)$ are simply obtained by interchanging $x_1(n)$ and $x_2(n)$.
 
 The proposed DPD was based on injecting the above basis functions at the IM3+ sub-band with proper scaling such that the distortion at the IM3+ sub-band is minimized. 
 The composite baseband equivalent PA input signal with $Q^{th}$ order sub-band DPD processing thus reads 
@@ -297,7 +307,7 @@ Two algorithm modifications are thus proposed in the next section for improving 
 \begin{figure*}
 	\centering
 	%\vspace{0.5cm}
-	\centerline{\includegraphics[width=0.89\textwidth]{./Figures/SystemFlowChart.pdf}}
+	\centerline{\includegraphics[width=0.89\textwidth]{./Figures/SubBandSystemNew.pdf}}
 	\caption[]{Flow chart of the proposed iterative sub-band DPD solution.}
 	\label{fig:SystemFlowChart}
 \end{figure*}
