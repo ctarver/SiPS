@@ -32,6 +32,11 @@ At this point, we were satisfied with the performance and quit training.
 \label{fig:RightThenLeft}
 \end{figure}
 
+\subsection{IM3$\pm$ and IM5$\pm$ Iterations}
+We then performed a similar experiment to the previous. However, the two carriers were set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable on the WARP board. For this expierment, we set a threshold that the spurs must be -40 dB below the main carriers.
+
+In the first iteration, we trained the IM3+ spur with a 3rd-order, sub-band DPD. This suppressed the spur below the threshold. Then in the second iteration, we trained the IM3- spur since it was above the threshold. 
+
 \subsection{Sequential Learning}
 As presented in Section \ref{sec:Sequential_Learning}, we then tested the sequential learning concept in \textsc{Warp}Lab where we started with low-order nonlinearities and added higher orders as needed. 
 In Fig. \ref{fig:ConcurrentConvergence}, we show an example for comparison using the previously developed concurrent training method. 

@@ -24,8 +24,10 @@ else
     Window  = kaiser(2000,9); 
     Signal_PSD = 10*log10(fftshift(pwelch(Rx_Signal,Window)));
     PA_Max = max(Signal_PSD);
-    
-    plot((-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437,Signal_PSD,'LineWidth',2); 
+    var = (-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437;
+    plot([(-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437],[-36*ones(length(var),1)],'Color','k')
+    hold on;
+    plot((-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437,Signal_PSD-PA_Max,'LineWidth',1,'Color','k'); 
     title(TITLE)
     xlabel('RF Frequency (MHz)')
     ylabel('Normalized Power (dB)')

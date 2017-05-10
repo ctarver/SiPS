@@ -36,6 +36,7 @@ The second modification involves adjusting the starting point for the DPD traini
 In (\ref{eq:BlockAdaptive}), $\bar{\boldsymbol{\alpha}}(0) = \mathbf{0}$. 
 If we were to start closer to the final coefficient, there would be less change necessary and hence the convergence time could be much faster. 
 We propose storing the final coefficients from various transmit scenarios. 
-Then, whenever the same or a similar transmit scenario is used again, we can retrain by starting from the previous value. 
-The previous coefficients should be similar, but retraining allows us to overcome possible variations due to temperature, power levels, etc. 
+Then, whenever the same transmit scenario is used again, we can retrain by starting from the previous value. The previous coefficients should be similar, but retraining allows us to overcome possible variations due to temperature, power levels, etc. 
+
+If we slightly change a TX parameter such as the gain of the PA so that we are at a new scenario, it may not be necessary to start our training from zero. Instead, as we collect DPD coefficients from a variety of scenarios, we can perform a linear interpolation to fill in the blanks. By starting the DPD training from an interpolated guess, we can reduce the training time for new scenarios.
 
