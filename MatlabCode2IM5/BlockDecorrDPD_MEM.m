@@ -8,6 +8,7 @@ delays = [];
 NumberOfBasisFunctions = length(IM3_Basis_Orthogonal(:,1));
 
 norm_basis = norm(IM3_Basis_Orthogonal);
+plot_coeff = 0;
 
 % Adaptive Decorrelating DPD using MBF
 if MemoryLessDPD 
