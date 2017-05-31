@@ -14,8 +14,10 @@ We focus on a sub-band.
 
 We forgot to think about the effect of our sub-band on another sub-band. 
 
-Novielties.
+For Sips 2016, we considered this.Novielties.
 
-Cool.
+Now we extend to account for IM5. 
+
+This is cool because ....
 
 The rest of the paper is... 
