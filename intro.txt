@@ -1,0 +1,21 @@
+To meet the ever increasing data-rate requirments for modern , we will need to use more bandwidth. However, due to spectrum scarcity, the availble bandwidth may not be contiguous. This has naturally led to the adoptation of more frequency adgile protocols in standards such as carrier aggregation in LTE-Adv. 
+
+Whenever spectrrum is aggregated in a discontiguous manner, challenges arrise in the  radio frontend design. Particularly, the power amplifier (PA) becomes problamatic. The PA is inherently a nonlinear device. Whenever discontiguous signals pass through a nonlinearity, they intermodulate. This intermodulation distortion can be sever and violate emession requirments. 
+
+To allivate this, one may reduce the gain of the PA to opperate in a more linear region. However, this reduces the range of the device. Moreover, a PA is most power efficient near its saturation region where the nonlinearites are most extreme. For mobile devices where power eficiency is critical, this is an undesirable tradeoff.
+
+An alternative to power back off is digital predistortion (DPD). Digital predistortion is a signal processing technique that requires sampling the output of the PA to learn the effective nonlinearities and then apply some sort of inverse nonlinaeities before the PA with the goal of canceling the PAs nonlinearities. This can have the effect of dramatically reducing spurious emessions and other nonlinear effects.
+
+However, to cancel a nonlinearity, we have to also observe it. For many carrier aggregation scenarios, the carriers may be spaced hundreds of MHz apart. This would lead to their intermodulation distortion products being spaced even farther apart. The observation bandwidth necessary to mitigate the spurious emessions becomes inpractical for many ADCs and RF downconverters. 
+
+Other works ignore this.
+
+We focus on a sub-band.
+
+We forgot to think about the effect of our sub-band on another sub-band. 
+
+Novielties.
+
+Cool.
+
+The rest of the paper is... 
