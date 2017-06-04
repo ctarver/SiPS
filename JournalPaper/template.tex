@@ -113,10 +113,23 @@ A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excelle
 \end{abstract}
 
 \section{Introduction}
-In mobile devices transmitting spectrally aggregated carriers with a single power amplifier (PA), some of the intermodulation distortion (IMD) components created by the nonlinear PA will fall on the spurious region as shown in Fig. \ref{fig:PSD} and may seriously violate the spurious emission limits \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
-To satisfy the stringent emission requirements in such scenarios, devices may need to considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink). 
-However, reducing the transmit power in order to fulfill the emission mask will necessarily reduce the uplink coverage. 
-An alternative solution to power back-off is to use digital predistortion (DPD) for reducing the unwanted spectral emissions \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz}. 
+To meet increasing data-rate needs of mobile users, devices will need access to more of the radio spectrum. 
+This is challenging considering the massive expected increase in the already large number of connected devices trying to access more bandwidth \cite{Cisco16}.
+This leads to what is referred to as spectrum scarcity. 
+In scenarios where there is little available bandwidth, it may be necessary to aggregate spectrum opportunistically, potentially across multiple bands non-contiguously. 
+This sort of frequency-agile system has been adopted in protocols and standards such as in LTE-Advanced with carrier aggregation \cite{wannstrom_2013} and will likely also play a role in 5G communications \cite{Khan2014}.  
+
+Whenever spectrum is aggregated in a discontinuous manner, challenges arise in the radio frontend design. 
+Particularly, the power amplifier (PA) becomes problematic. 
+The PA is inherently a nonlinear device \cite{Ghannouchi09}. 
+Whenever discontiguous signals pass through a nonlinearity, they intermodulate creating  intermodulation distortion (IMD) components throughout the nearby spectrum which could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario CITE ME. 
+This intermodulation distortion can be severe and violate emission requirements in standards such as the 3GPP LTE-Advanced or other FCC standards    \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
+
+
+In mobile devices transmitting spectrally aggregated carriers with a single power amplifier (PA), some of the intermodulation distortion (IMD) components created by the nonlinear PA will fall on the spurious region as shown in Fig. \ref{fig:PSD}. 
+To satisfy the stringent emission requirements in such scenarios, devices may need to considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
+However, reducing the transmit power in order to satisfy the emission mask will necessarily reduce the uplink coverage and the energy efficiency of the PA. 
+An alternative solution to power back-off is to use digital predistortion (DPD) for reducing the unwanted spectral emissions \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz,Katz16}. 
 
 In \cite{ICASSP2014}, the third-order IMD at the IM3$\pm$ sub-bands were considered separately, while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
 An \textsc{fpga} implementation of this solution has also been presented by the authors in \cite{Asilomar2015} demonstrating real-time processing of the adaptive DPD learning solution.
@@ -134,6 +147,7 @@ In summary, the main novelty of this paper is as follows:
 	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning once the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
 	\item A \textsc{Warp}Lab implementation of the proposed solution is done demonstrating effective performance of the proposed solution using real hardware equipment. 
 \end{itemize}
+
 
 This paper is organized as follows. 
 In Section II, the modeling of the spurious emissions at the IM3 sub-bands and their mutual effects are presented.

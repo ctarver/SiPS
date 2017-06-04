@@ -1,10 +1,10 @@
-To meet the ever increasing data-rate requirments for modern , we will need to use more bandwidth. However, due to spectrum scarcity, the availble bandwidth may not be contiguous. This has naturally led to the adoptation of more frequency adgile protocols in standards such as carrier aggregation in LTE-Adv. 
+To meet the increasing data-rate needs for mobile devices, signals from individual users will need to use more of the radio spectrum. This is challenging considering the increase in number of mobile users trying to access the spectrum. This leads to a notion of spectrum scarcity. In scenarios where there is little availble bandwidth, it may be necessary to aggegate spectrum that is not contiguous. This has naturally led to the adoptation of more frequency adgile protocols in standards such as carrier aggregation in LTE-Adv \cite{Carrier aggregation explained}. and will likely also play a role in 5G communications \cite{Khan2014}.  
 
-Whenever spectrrum is aggregated in a discontiguous manner, challenges arrise in the  radio frontend design. Particularly, the power amplifier (PA) becomes problamatic. The PA is inherently a nonlinear device. Whenever discontiguous signals pass through a nonlinearity, they intermodulate. This intermodulation distortion can be sever and violate emession requirments. 
+Whenever spectrrum is aggregated in a discontiguous manner, challenges arrise in the  radio frontend design. Particularly, the power amplifier (PA) becomes problamatic. The PA is inherently a nonlinear device \cite{Ghannouchi09}. Whenever discontiguous signals pass through a nonlinearity, they intermodulate. This intermodulation distortion can be sever and violate emession requirments in standards such as the 3GPP LTE-Adv \cite{nokia}. 
 
-To allivate this, one may reduce the gain of the PA to opperate in a more linear region. However, this reduces the range of the device. Moreover, a PA is most power efficient near its saturation region where the nonlinearites are most extreme. For mobile devices where power eficiency is critical, this is an undesirable tradeoff.
+To allivate this, one may reduce the gain of the PA so that it opperates in a more linear region. However, this reduces the range of the device. Moreover, a PA is most power efficient near its saturation region where the nonlinearites are most extreme. For mobile devices where power eficiency is critical, this is an undesirable tradeoff.
 
-An alternative to power back off is digital predistortion (DPD). Digital predistortion is a signal processing technique that requires sampling the output of the PA to learn the effective nonlinearities and then apply some sort of inverse nonlinaeities before the PA with the goal of canceling the PAs nonlinearities. This can have the effect of dramatically reducing spurious emessions and other nonlinear effects.
+An alternative to power back off is digital predistortion (DPD). Digital predistortion is a signal processing technique that requires sampling the output of the PA to learn the effective nonlinearities and then apply some sort of inverse nonlinaeities before the PA with the goal of canceling the PAs nonlinearities. This can have the effect of dramatically reducing spurious emessions and other nonlinear effects \cite{Katz16}..
 
 However, to cancel a nonlinearity, we have to also observe it. For many carrier aggregation scenarios, the carriers may be spaced hundreds of MHz apart. This would lead to their intermodulation distortion products being spaced even farther apart. The observation bandwidth necessary to mitigate the spurious emessions becomes inpractical for many ADCs and RF downconverters. 
 
@@ -21,3 +21,24 @@ Now we extend to account for IM5.
 This is cool because ....
 
 The rest of the paper is... 
+
+
+@ARTICLE{Khan2014, 
+author={Z. Khan and H. Ahmadi and E. Hossain and M. Coupechoux and L. A. Dasilva and J. J. Lehtomäki}, 
+journal={IEEE Network}, 
+title={Carrier aggregation/channel bonding in next generation cellular networks: methods and challenges}, 
+year={2014}, 
+volume={28}, 
+number={6}, 
+pages={34-40}, 
+keywords={cellular radio;next generation networks;telecommunication channels;telecommunication signalling;carrier aggregation-channel bonding;cellular systems;control signaling;frequency carriers aggregation;next generation cellular networks;shared access bands;spectral resources;wireless industry;5G mobile communication;Aggregation;Heuristic algorithms;IEEE 802.11 Standards;Interference;Next generation networking;Wireless communication}, 
+doi={10.1109/MNET.2014.6963802}, 
+ISSN={0890-8044}, 
+month={Nov},}
+
+“Way forward for non-contiguous intraband transmitter
+aspects,”
+
+C. S. Park, L. Sundström, A. Wallen, and A. Khayrallah, “Carrier
+aggregation for LTE-advanced: Design challenges of terminals,” IEEE
+Commun. Mag., vol. 51, no. 12, pp. 76–84, Dec. 2013.
