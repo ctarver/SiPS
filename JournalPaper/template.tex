@@ -141,14 +141,17 @@ Carrier aggregation has made its way from the standards down to commercial imple
 Although carrier aggregation is becoming more commonplace, most DPD solutions do not consider the case of or provide a solution for the intermodulation products. 
 For example, in \cite{S.A.BassamOct.2011}, the effects of intermodulation are considered, but only the bandwidth around the main carrier is linearized. 
 
-In \cite{ICASSP2014}, the third-order IMD at the IM3$\pm$ sub-bands were considered separately, while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
+To combat this, the authors introduced a subband DPD method in \cite{ICASSP2014}. 
+However, the third-order IMD at the IM3$\pm$ sub-bands were considered separately, while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
 An \textsc{fpga} implementation of this solution has also been presented by the authors in \cite{Asilomar2015} demonstrating real-time processing of the adaptive DPD learning solution.
-An extension of the DPD solution in \cite{ICASSP2014,Asilomar2015} is proposed in this paper, where an iterative learning algorithm is used between the IMD sub-bands until they are both properly suppressed. 
+
+An extension of the DPD solution in \cite{ICASSP2014,Asilomar2015} was proposed in \cite{Tarver16}, where an iterative learning algorithm is used between the IMD sub-bands until they are both properly suppressed. 
 Moreover, in \cite{TMTT_SubbandDPD}, higher nonlinearity orders were introduced in addition to the third-order nonlinearity processing in \cite{ICASSP2014,Asilomar2015}. 
-A \textsc{Warp}Lab implementation of an iterative version of this higher order sub-band DPD is also presented in this paper with additional ideas added to reduce the complexity and/or improve the learning speed of the proposed DPD. 
-In summary, the main novelty of this paper is as follows:
+A \textsc{Warp}Lab implementation of an iterative version of this higher order sub-band DPD was also presented  with additional ideas added to reduce the complexity and/or improve the learning speed of the proposed DPD. 
+
+In this paper, we extend the work from \cite{Tarver16} to include processing for the fifth order intermodulation products (IM5) and include new interpolation based speed-up methods. In summary, this paper includes:
 \begin{itemize}
-	\item Introducing an iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them.
+	\item An iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them.
 	\item The learning of the higher order nonlinearities in each sub-band is done sequentially, one basis function at a time in ascending order. 
 	This has the advantage of reducing the hardware complexity by essentially using one learning module for all the nonlinearity orders. 
 	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity.
@@ -157,7 +160,6 @@ In summary, the main novelty of this paper is as follows:
 	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning once the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
 	\item A \textsc{Warp}Lab implementation of the proposed solution is done demonstrating effective performance of the proposed solution using real hardware equipment. 
 \end{itemize}
-
 
 This paper is organized as follows. 
 In Section II, the modeling of the spurious emissions at the IM3 sub-bands and their mutual effects are presented.
