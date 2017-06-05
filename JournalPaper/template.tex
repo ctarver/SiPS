@@ -115,21 +115,31 @@ A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excelle
 \section{Introduction}
 To meet increasing data-rate needs of mobile users, devices will need access to more of the radio spectrum. 
 This is challenging considering the massive expected increase in the already large number of connected devices trying to access more bandwidth \cite{Cisco16}.
-This leads to what is referred to as spectrum scarcity. 
+This leads to what is referred to as spectrum scarcity \cite{Staple04,Federated17}. 
 In scenarios where there is little available bandwidth, it may be necessary to aggregate spectrum opportunistically, potentially across multiple bands non-contiguously. 
 This sort of frequency-agile system has been adopted in protocols and standards such as in LTE-Advanced with carrier aggregation \cite{wannstrom_2013} and will likely also play a role in 5G communications \cite{Khan2014}.  
 
 Whenever spectrum is aggregated in a discontinuous manner, challenges arise in the radio frontend design. 
-Particularly, the power amplifier (PA) becomes problematic. 
+In particular, the power amplifier (PA) becomes problematic. 
 The PA is inherently a nonlinear device \cite{Ghannouchi09}. 
-Whenever discontiguous signals pass through a nonlinearity, they intermodulate creating  intermodulation distortion (IMD) components throughout the nearby spectrum which could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario CITE ME. 
+Whenever discontiguous signals pass through a nonlinearity, they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum which could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
 This intermodulation distortion can be severe and violate emission requirements in standards such as the 3GPP LTE-Advanced or other FCC standards    \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
-
 
 In mobile devices transmitting spectrally aggregated carriers with a single power amplifier (PA), some of the intermodulation distortion (IMD) components created by the nonlinear PA will fall on the spurious region as shown in Fig. \ref{fig:PSD}. 
 To satisfy the stringent emission requirements in such scenarios, devices may need to considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
 However, reducing the transmit power in order to satisfy the emission mask will necessarily reduce the uplink coverage and the energy efficiency of the PA. 
-An alternative solution to power back-off is to use digital predistortion (DPD) for reducing the unwanted spectral emissions \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz,Katz16}. 
+ \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz,Katz16}. 
+
+An alternative to power back-off is digital predistortion (DPD). 
+Digital predistortion is a signal processing technique that requires sampling the output of the PA to learn the effective nonlinearities and then apply some sort of inverse nonlinaeities before the PA with the goal of canceling the PAs nonlinearities. 
+This can have the effect of dramatically reducing spurious emissions and other nonlinear effects \cite{Katz16}.
+
+However, to cancel a nonlinearity, we have to also be able to observe it. For many carrier aggregation scenarios, the carriers may be spaced hundreds of MHz apart. 
+This would lead to their intermodulation distortion products being spaced even farther apart so that the observation bandwidth necessary to mitigate the spurious emissions becomes unpractical for many analog-to-digital converters (ADCs) and radio-frequency (RF) downconverters \cite{S.A.BassamOct.2011}. 
+
+Carrier aggregation has made its way from the standards down to commercial implementations being used with many networks providing support for it and system-on-chips such as the Snapdragon 835 supporting three downlink carriers and two uplink carriers. 
+Although carrier aggregation is becoming more commonplace, most DPD solutions do not consider the case of or provide a solution for the intermodulation products. 
+For example, in \cite{S.A.BassamOct.2011}, the effects of intermodulation are considered, but only the bandwidth around the main carrier is linearized. 
 
 In \cite{ICASSP2014}, the third-order IMD at the IM3$\pm$ sub-bands were considered separately, while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
 An \textsc{fpga} implementation of this solution has also been presented by the authors in \cite{Asilomar2015} demonstrating real-time processing of the adaptive DPD learning solution.
