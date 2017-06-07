@@ -101,9 +101,10 @@ grestore
 %Current number of words: 138. 
 %Recommended: 150 to 250 word
 \begin{abstract}
-Digital predistortion (DPD) is an effective way of mitigating spurious emission violations without the need of a significant power reduction in the transmitter, thus providing better power efficiency and network coverage. 
+The nonlinearities of PAs combined with non-contiguous transmissions create undesirable spurious emissions through the nearby spectrum of data carriers.
+Digital predistortion (DPD) is an effective way of combating spurious emission violations without the need of a significant power reduction in the transmitter, thus providing better power efficiency and network coverage. 
 In this paper an iterative version of the sub-band DPD, proposed earlier by the authors, is presented. 
-The DPD learning is iterated between intermodulation distortion (IMD) sub-bands until a satisfactory performance is achieved for both of them. 
+The DPD learning is iterated over intermodulation distortion (IMD) sub-bands until a satisfactory performance is achieved for each of them. 
 A sequential DPD learning procedure is also presented in order to reduce the hardware complexity when higher order nonlinearities are incorporated in the DPD learning. 
 Improvements on the convergence speed of the adaptive DPD learning are also achieved via incorporating a variable learning rate and interpolation of previously trained DPD coefficients. 
 A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excellent suppression of the targeted spurious emissions. 
@@ -114,34 +115,41 @@ A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excelle
 
 \section{Introduction}
 To meet increasing data-rate needs of mobile users, devices will need access to more of the radio spectrum. 
-This is challenging considering the massive expected increase in the already large number of connected devices trying to access more bandwidth \cite{Cisco16}.
+This is challenging considering the massive expected increase in the already large number of connected devices \cite{Cisco16}.
 This leads to what is referred to as spectrum scarcity \cite{Staple04,Federated17}. 
 In scenarios where there is little available bandwidth, it may be necessary to aggregate spectrum opportunistically, potentially across multiple bands non-contiguously. 
 This sort of frequency-agile system has been adopted in protocols and standards such as in LTE-Advanced with carrier aggregation \cite{wannstrom_2013} and will likely also play a role in 5G communications \cite{Khan2014}.  
 
-Whenever spectrum is aggregated in a discontinuous manner, challenges arise in the radio frontend design. 
+For cases where spectrum is aggregated in a non-continuous manner, challenges arise in the radio frontend design. 
 In particular, the power amplifier (PA) becomes problematic. 
-The PA is inherently a nonlinear device \cite{Ghannouchi09}. 
-Whenever discontiguous signals pass through a nonlinearity, they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum which could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
+The PA is inherently a nonlinear device \cite{Ghannouchi09}, and whenever non-contiguous signals pass through this nonlinearity they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum as illustrated in Figure \ref{fig:PSD}. These spurious emissions or ``spurs" could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
 This intermodulation distortion can be severe and violate emission requirements in standards such as the 3GPP LTE-Advanced or other FCC standards    \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
 
-In mobile devices transmitting spectrally aggregated carriers with a single power amplifier (PA), some of the intermodulation distortion (IMD) components created by the nonlinear PA will fall on the spurious region as shown in Fig. \ref{fig:PSD}. 
+\begin{figure}
+	\centering
+	%\vspace{0.5cm}
+	\centerline{\includegraphics[width=\columnwidth]{./Figures/PSD.pdf}}
+	\caption[]{Power spectral density of a carrier aggregated signal after being applied through a nonlinear PA.
+		Nonlinearity orders up to the seventh are shown.}
+	\label{fig:PSD}
+\end{figure}
+
 To satisfy the stringent emission requirements in such scenarios, devices may need to considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
 However, reducing the transmit power in order to satisfy the emission mask will necessarily reduce the uplink coverage and the energy efficiency of the PA. 
  \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz,Katz16}. 
 
 An alternative to power back-off is digital predistortion (DPD). 
-Digital predistortion is a signal processing technique that requires sampling the output of the PA to learn the effective nonlinearities and then apply some sort of inverse nonlinaeities before the PA with the goal of canceling the PAs nonlinearities. 
+DPD is a signal processing technique that requires sampling the output of the PA to learn its nonlinearities and then applying an inverse of them in the digital baseband signal to cancel the effect of the PA's nonlinearities. 
 This can have the effect of dramatically reducing spurious emissions and other nonlinear effects \cite{Katz16}.
 
 However, to cancel a nonlinearity, we have to also be able to observe it. For many carrier aggregation scenarios, the carriers may be spaced hundreds of MHz apart. 
-This would lead to their intermodulation distortion products being spaced even farther apart so that the observation bandwidth necessary to mitigate the spurious emissions becomes unpractical for many analog-to-digital converters (ADCs) and radio-frequency (RF) downconverters \cite{S.A.BassamOct.2011}. 
+This would lead to their intermodulation distortion products being spaced even farther apart so that the observation bandwidth necessary to mitigate the spurious emissions becomes infeasible for many analog-to-digital converters (ADCs) and radio-frequency (RF) downconverters \cite{S.A.BassamOct.2011}. 
 
-Carrier aggregation has made its way from the standards down to commercial implementations being used with many networks providing support for it and system-on-chips such as the Snapdragon 835 supporting three downlink carriers and two uplink carriers. 
-Although carrier aggregation is becoming more commonplace, most DPD solutions do not consider the case of or provide a solution for the intermodulation products. 
+This issue is quickly becoming more prevalent in that carrier aggregation is now almost commonplace. Since its debut in LTE release 10 (2011), it has made its way from the standards down to commercial implementations being used with many networks providing support for up to three carriers on the downlink \cite{AT&T}. May consumer devices also support it with system-on-chips such as the Snapdragon 835 supporting four downlink carriers and two uplink carriers \cite{Qual835}. 
+However, most DPD solutions do not completely consider the carrier aggregation scenario. 
 For example, in \cite{S.A.BassamOct.2011}, the effects of intermodulation are considered, but only the bandwidth around the main carrier is linearized. 
 
-To combat this, the authors introduced a subband DPD method in \cite{ICASSP2014}. 
+To combat this, the authors introduced a sub-band DPD method in \cite{ICASSP2014}. 
 However, the third-order IMD at the IM3$\pm$ sub-bands were considered separately, while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
 An \textsc{fpga} implementation of this solution has also been presented by the authors in \cite{Asilomar2015} demonstrating real-time processing of the adaptive DPD learning solution.
 
@@ -170,21 +178,12 @@ In Section V, the overall DPD system flow is presented.
 In Section VI, we show the results from testing the proposed algorithms on the \textsc{Warp}Lab platform. 
 Finally, in Section VII, we conclude the paper.
 
-\begin{figure}
-	\centering
-	%\vspace{0.5cm}
-	\centerline{\includegraphics[width=\columnwidth]{./Figures/PSD.pdf}}
-	\caption[]{Power spectral density of a carrier aggregated signal after being applied through a nonlinear PA.
-		Nonlinearity orders up to the seventh are shown.}
-	\label{fig:PSD}
-\end{figure}
-
 \section{Spurious Component Modeling and Iterative IM3 Sub-band DPD Processing}
 \label{sec:Analysis}
 In \cite{ICASSP2014}, a decorrelation-based sub-band DPD was proposed to mitigate the spurious emissions at the IM3$\pm$ sub-bands. 
 However, the mutual effect of, for example, the IM3+ sub-band DPD on the IM3- sub-band was not taken into consideration. 
-In this work, we propose an iterative sub-band DPD that starts with linearizing the IM3+ sub-band, and then after applying the IM3+ sub-band DPD, the learning is switched to the IM3- sub-band. 
-Since each of the IM3$\pm$ sub-band DPDs has an effect on the other sub-band, the proposed DPD iterates the learning between the two sub-bands until both spurious emissions are sufficiently suppressed.
+In this work, we propose an iterative sub-band DPD that starts with linearizing the IM3+ sub-band, and then after applying the IM3+ sub-band DPD, the learning is switched to another sub-band. 
+Since each of the IM3$\pm$ sub-band DPDs has an effect on the other sub-band, the proposed DPD iterates the learning between each of the considered sub-bands until the spurious emissions are sufficiently suppressed.
 
 To further illustrate this behavior, a mathematical analysis is introduced in this section to show the impact of the IM3+ sub-band DPD on the IM3- sub-band when a dual carrier signal is applied to a nonlinear PA. 
 This analysis will provide a theoretical foundation and motivation for our work. 
@@ -357,11 +356,11 @@ In the next section, comprehensive experimental results are presented using the 
 \import{./}{Section_WarpLabResults.tex}
 
 \section{Conclusion}
-In this paper an iterative IM3 sub-band DPD learning algorithm has been proposed. 
-A sequential learning procedure where higher nonlinearity orders were added one at a time was also presented in order to reduce the complexity and flexibility of the DPD. 
+In this paper an iterative sub-band DPD learning algorithm has been presented that can suppress the IM3 and IM5 spurious emissions. 
+A sequential learning procedure where higher nonlinearity orders were added one at a time was also presented in order to reduce the complexity and add flexibility to the DPD solution. 
 Additionally, the convergence speed of the proposed DPD has been improved by two methods, while not sacrificing the DPD performance. 
 The first used a variable learning rate which switches from high speed to lower speed once the loop becomes close to convergence. 
-The second method starts the DPD learning from previously learned points to reduce convergence time. 
+The second method starts the DPD learning from previously learned points and uses interpolation of past scenarios to reduce convergence time. 
 A \textsc{Warp}Lab implementation of the proposed DPD solution has been demonstrated showing excellent performance with up to 20 dB suppression in the undesired spurious emissions.
 
 %\begin{acknowledgements}
