@@ -32,11 +32,6 @@ At this point, we were satisfied with the performance and quit training.
 \label{fig:RightThenLeft}
 \end{figure}
 
-\subsection{IM3$\pm$ and IM5$\pm$ Iterations}
-We then performed a similar experiment to the previous. However, the two carriers were set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable on the WARP board. For this expierment, we set a threshold that the spurs must be -40 dB below the main carriers.
-
-In the first iteration, we trained the IM3+ spur with a 3rd-order, sub-band DPD. This suppressed the spur below the threshold. Then in the second iteration, we trained the IM3- spur since it was above the threshold. 
-
 \subsection{Sequential Learning}
 As presented in Section \ref{sec:Sequential_Learning}, we then tested the sequential learning concept in \textsc{Warp}Lab where we started with low-order nonlinearities and added higher orders as needed. 
 In Fig. \ref{fig:ConcurrentConvergence}, we show an example for comparison using the previously developed concurrent training method. 
@@ -105,6 +100,54 @@ We then choose to work at an RF gain of 50. We linearly interpolated from the tw
 \end{figure}
 
  As we continue to transmit under various conditions, the interpolations become more accurate. Eventually, a complete table of DPD coefficients is formed. Then whenever we need to broadcast, we can simply load the previous coefficients and quickly update them to account for small fluctuations if needed. 
+ 
+ \subsection{Full System Verification}
+ We then put everything together in \textsc{Warp}Lab to follow the process shown in Figure \ref{fig:SystemFlowChart} where multiple spurs need to be under a threshold. The previously discussed speed-up methods are applied in the training process. Two LTE carriers are broadcast. The two carriers are set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable in the WARP board's 40 MHz RF Bandwidth. For this experiment, we set a threshold that the spurs must be -35 dB below the main carriers. The results are plotted in the figure \ref{fig:IM5}.
+ 
+ \begin{figure}
+ 	\centering
+ 	\includegraphics[]{Figures/IM5Spectrum}
+ 	\caption{Normalized spectral result when using the iterative method to make sure both IM3 and both IM5 spurious emissions are below the threshold}
+ 	\label{fig:IM5}
+ \end{figure}
+ 
+ We assume this to be a new configuration where we start with no know coefficients; every coefficient gets initialized to zero. The non-contiguous signal is broadcast over the WARP board, and the spectrum for this is shown as the blue curve in Figure \ref{fig:IM5}. We identify the IM3+ spur as the most severe and train on it. There is some suppression, but it does not completely meet the threshold. We train another order on the IM3+ spur and then continue the process until the final result shown in black is achieved. During the process, the mutual effect of one DPD training negatively impacts the other spurs and causes additional steps in the multi sub-band DPD. All of the intermediate results are shown Table \ref{tab:IM5}.
+ 
+ \begin{table}
+ \begin{tabular}{c l c|r r r r}
+	
+	\multicolumn{3}{c|}{Training Step}  & \multicolumn{4}{c}{Result (dB)} \\ 
+	\hline 
+	Step & Spur & Order & IM5-  & IM3- & IM3+ & IM5+ \\ 
+	\hline 
+	0 & - & - & -38.7 & -28.0 & -27.9 & -38.8 \\ 
+	
+	1 & IM3+ & 3 & -37.3 & -27.4 & -34.4 & -36.7 \\ 
+	
+	2 & IM3+ & 5 & -37.2 & -27.4 & -36.9 & -36.4 \\ 
+	
+	3 & IM3- & 3 & -35.9 & -33.9 & -35.5 & -34.9 \\ 
+	
+	4 & IM3- & 5 & -35.0 & -37.0 & -35.8 & -34.5 \\ 
+	
+	5 & IM5+ & 5 & -34.5 & -33.15 & -34.5 & -43.0 \\ 
+	
+	6 & IM3- & 5 & -33.6 & -37.1 & -34.3 & -44.4 \\ 
+	
+	7 & IM5- & 5 & -42.9 & -32.0 & -33.5 & -44.0 \\ 
+	
+	8 & IM3- & 5 & -45.1 & -37.6 & -33.2 & -44.0 \\ 
+	
+	9 & IM3+ & 3 & -43.2 & -32.3 & -36.8 & -42.6 \\ 
+	
+	10 & IM3- & 5 & -44.6 & -37.5 & -37.0 & -42.5 \\ 
+	
+\end{tabular} 
+\caption{Results of the intermediate training steps in the multi sub-band DPD from Figure \ref{fig:IM5}.}
+\label{tab:IM5}
+ \end{table}
+
+ 
 
 
 
