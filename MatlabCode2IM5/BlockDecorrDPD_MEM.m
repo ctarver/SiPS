@@ -182,13 +182,13 @@ end
 b = [0.9 0.1];
 RMS_data_filtered = filter(b,1,RMS_data);
 FinalCoeff = DPD_Coeff(1:NumBlocks,:)+start_coeff;
-
+if 0
 figure();
 plot(abs(FinalCoeff)/max(abs(FinalCoeff)))
 hold on
 plot(MU_vector/max(MU_vector))
 plot(abs(Correlate))
-
+end
 % Plot DPD filter taps convergence
 if MemoryLessDPD
     if plot_coeff

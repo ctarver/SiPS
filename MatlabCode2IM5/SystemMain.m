@@ -40,9 +40,9 @@ IM3_order_9 = 1;
 USE_WARP = 1;                %Use a WARP Board
 DO_Training = 1;             %Train coefficients or run code with predefined coefficients.
 DPD_LearningRate = 1;         % Decorrelating DPD Learning Rate
-DPD_LearningBlockSize  = 1024;    % Decorrelating DPD Learning Block size
-DPD_FilteringBlockSize = 1024*2;    % Decorrelating DPD Filtering Block size
-NumLearningSamples = 200000;
+DPD_LearningBlockSize  = 528;    % Decorrelating DPD Learning Block size
+DPD_FilteringBlockSize = 528;    % Decorrelating DPD Filtering Block size
+NumLearningSamples = 100000;
 
 
 % Gain 3,45
@@ -72,13 +72,13 @@ IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
 WARP_ID = 00031;
 
 if(USE_WARP)
-   Max_input_scale_factor = 0.7;   %Scale the input between 0 and 1
+   Max_input_scale_factor = 0.68;   %Scale the input between 0 and 1
    Dont_trust_cyclosync = 1;
    
    % RX variables
    Channel_RX = 6;
-   RxGainRF   = 2;  % Rx RF Gain in [1:3] (ignored if USE_AGC is true)
-   RxGainBB   = 14; % Rx Baseband Gain in [0:31] (ignored if USE_AGC is true)
+   RxGainRF   = 1;  % Rx RF Gain in [1:3] (ignored if USE_AGC is true)
+   RxGainBB   = 17; % Rx Baseband Gain in [0:31] (ignored if USE_AGC is true)
    RX_LPF     = 3;  % [0,1,2,3] for approx ![7.5,9.5,14,18]MHz corner
    
    % TX variables
@@ -267,8 +267,8 @@ if(DO_Training)
    end
    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
-   
-   figure(100);
+   %% Plot without DPD
+   figure();
    plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
    hold on;
    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
@@ -305,15 +305,16 @@ if(DO_Training)
    end
    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
-   figure(100);
+   %% Plot IM3 3rd Order
+   figure();
    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
    grid on;
    hold on;
    
    %Do additional training as needed.
    
-%    %GenerateBasis(CC1,CC2,1,3,5);
-%    DPD_LearningRate = 1;
+   %    %GenerateBasis(CC1,CC2,1,3,5);
+   %    DPD_LearningRate = 1;
    [IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
@@ -341,45 +342,46 @@ if(DO_Training)
    end
    PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
    
-   figure(100);
+   %% IM3+ 5th Order
+   figure();
    plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
    grid on;
-%    
-%    %Do additional training as needed. 7th
-%    
+   %
+   %    %Do additional training as needed. 7th
+   %
    %GenerateBasis(CC1,CC2,1,3,7);
-%    DPD_LearningRate = 1;
-%    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
-%       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-%       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
-%    disp('DPD Filtering BlockSize in msec = ');
-%    disp(1e3*DPD_FilteringBlockSize/SystemFs);
-%    
-%    % Applying 7th order IM3+ Decorr DPD
-%    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-%    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-%    n = (1:length(IM3_DPD_Signal)).';
-%    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-%    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
-%    
-%    % Check to see that I'm not saturating anything
-%    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
-%    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
-%    MAX = max(MAX_real,MAX_imag);
-%    display('MAX PAin_IM3_SeventhOrderDPD =');
-%    display(MAX);
-%    if(USE_WARP)
-%       PA_Output_IM3_SeventhOrderDPD = WARP_broadcast(PAin_IM3_SeventhOrderDPD);
-%    else
-%       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
-%    end
-%    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
-%    
-%    figure(100);
-%    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-%    grid on;
- end
+   %    DPD_LearningRate = 1;
+   %    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
+   %       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   %       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   %       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
+   %    disp('DPD Filtering BlockSize in msec = ');
+   %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   %
+   %    % Applying 7th order IM3+ Decorr DPD
+   %    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+   %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   %    n = (1:length(IM3_DPD_Signal)).';
+   %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   %    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
+   %
+   %    % Check to see that I'm not saturating anything
+   %    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
+   %    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
+   %    MAX = max(MAX_real,MAX_imag);
+   %    display('MAX PAin_IM3_SeventhOrderDPD =');
+   %    display(MAX);
+   %    if(USE_WARP)
+   %       PA_Output_IM3_SeventhOrderDPD = WARP_broadcast(PAin_IM3_SeventhOrderDPD);
+   %    else
+   %       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
+   %    end
+   %    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
+   %
+   %    figure();
+   %    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+   %    grid on;
+end
 
 
 %% DO it for IM3-
@@ -425,7 +427,7 @@ if(DO_Training)
    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
    
-   figure(100);
+   figure();
    %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
    %hold on;
    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
@@ -462,13 +464,14 @@ if(DO_Training)
    end
    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
-   figure(100);
+   %% IM3- 3RD ORDER PLOT
+   figure();
    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
    grid on;
    hold on;
    
-%    % Do additional training as needed.
-%    
+   %    % Do additional training as needed.
+   %
    %GenerateBasis(CC1,CC2,1,3,5);
    DPD_LearningRate = 1;
    [IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
@@ -498,12 +501,345 @@ if(DO_Training)
    end
    PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
    
-   figure(100);
+   %% PLOT IM3- 5th ORDER
+   figure();
    plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-   %grid on;
-%    
+   grid on;
+   %
+   %    % Do additional training as needed. 7th
+   %
+   %    %GenerateBasis(CC1,CC2,1,3,7);
+   %    DPD_LearningRate = 1;
+   %    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
+   %       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   %       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   %       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
+   %    disp('DPD Filtering BlockSize in msec = ');
+   %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   %
+   %    % Applying 7th order IM3+ Decorr DPD
+   %    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+   %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   %    n = (1:length(IM3_DPD_Signal)).';
+   %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   %    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
+   %
+   %    % Check to see that I'm not saturating anything
+   %    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
+   %    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
+   %    MAX = max(MAX_real,MAX_imag);
+   %    display('MAX PAin_IM3_SeventhOrderDPD =');
+   %    display(MAX);
+   %    if(USE_WARP)
+   %       PA_Output_IM3_SeventhOrderDPD = WARP_broadcast(PAin_IM3_SeventhOrderDPD);
+   %    else
+   %       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
+   %    end
+   %    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
+   %
+   %    figure();
+   %    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+   %    grid on;
+   
+end
+
+%% DO it for IM5+
+PA_InputSignal = PAin_IM3_ThirdOrderDPD;
+IM3_ThirdOrder_Coeffs = 0;
+IM3_FifthOrder_Coeffs = 0;
+IM3_SeventhOrder_Coeffs = 0;
+IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
+IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
+IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
+IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+
+
+% First Generate the righthand 3rd basis function and do training
+if(DO_Training)
+   IM3_BasisThirdOrder  = (conj(CC2).^2).*(CC1.^3);    % 5th ORDER
+   %IM3_BasisFifthOrder  = IM3_BasisThirdOrder.*(4*(abs(CC1).^2) + 3*(abs(CC2).^2)); %7th order
+   %IM5_Basis_9thOrder  = IM5_Basis_5thOrder.*(10*(abs(CC1).^4) + 6*(abs(CC2).^4) + ...
+   %                                          20*(abs(CC1).^2).*(abs(CC2).^2));
+   %IM5_Basis_9th = [IM5_Basis_5thOrder IM5_Basis_7thOrder IM5_Basis_9thOrder];
+   IM3_Freq = IM5_Freq;
+   
+   %  [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
+   %     SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
+   
+   %Apply initial guess
+   All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
+   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
+      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
+      conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+   %   conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
+   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   n = (1:length(IM3_DPD_Signal)).';
+   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
+   
+   %Check How good theses still are
+   %if(USE_WARP)
+   %   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+   %else
+   %   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+   %end
+   %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+   
+   
+   %figure();
+   %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+   %hold on;
+   %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+   
+   %Train with that
+   DPD_LearningRate = 3;
+   NumLearningSamples = NumLearningSamples * 2;
+   [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
+      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
+   disp('DPD Filtering BlockSize in msec = ');
+   disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   
+   %Check to see if I need more suppression
+   %IM3_ThirdOrder_Coeffs = -5i;
+   % Applying Third Order IM3+ Decorr DPD
+   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
+   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   n = (1:length(IM3_DPD_Signal)).';
+   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+   
+   % Check to see that I'm not saturating anything
+   MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
+   MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
+   MAX = max(MAX_real,MAX_imag);
+   display('MAX PAin_IM3_ThirdOrderDPD =');
+   display(MAX);
+   if(USE_WARP)
+      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+   else
+      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+   end
+   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+   
+   figure();
+   plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+   grid on;
+   hold on;
+end
+
+%% DO it for IM3-
+PA_InputSignal = PAin_IM3_ThirdOrderDPD;
+IM3_ThirdOrder_Coeffs = 0;Coeff_3rd(end);
+IM3_FifthOrder_Coeffs = 0;Coeff_5th(end);
+IM3_SeventhOrder_Coeffs = 0;%Coeff_7th(end);
+IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
+IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
+IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
+IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+
+
+% First Generate the righthand 3rd basis function and do training
+if(DO_Training)
+   GenerateBasis(CC2,CC1,1,3,3);
+   GenerateBasis(CC2,CC1,1,3,5);
+   GenerateBasis(CC2,CC1,1,3,7);
+   %GenerateBasis(CC1,CC2,1,3,9);
+   IM3_Freq = -9;% IM3_Freq;
+   
+   [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
+      SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
+   
+   %Apply initial guess
+   %All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
+   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
+      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
+      conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+   %conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
+   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   n = (1:length(IM3_DPD_Signal)).';
+   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
+   
+   %Check How good theses still are
+   if(USE_WARP)
+      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+   else
+      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+   end
+   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+   
+   
+   figure();
+   %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+   %hold on;
+   %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+   
+   %Train with that
+   DPD_LearningRate = 3;
+   [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PA_InputSignal,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
+      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
+   disp('DPD Filtering BlockSize in msec = ');
+   disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   
+   %Check to see if I need more suppression
+   
+   % Applying Third Order IM3+ Decorr DPD
+   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
+   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   n = (1:length(IM3_DPD_Signal)).';
+   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+   
+   % Check to see that I'm not saturating anything
+   MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
+   MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
+   MAX = max(MAX_real,MAX_imag);
+   display('MAX PAin_IM3_ThirdOrderDPD =');
+   display(MAX);
+   if(USE_WARP)
+      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+   else
+      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+   end
+   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+   
+   figure();
+   plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+   grid on;
+   hold on;
+   
+end
+
+% %% DO it for IM3-
+% PA_InputSignal = PAin_IM3_ThirdOrderDPD;
+% IM3_ThirdOrder_Coeffs = 0;Coeff_3rd(end);
+% IM3_FifthOrder_Coeffs = 0;Coeff_5th(end);
+% IM3_SeventhOrder_Coeffs = 0;%Coeff_7th(end);
+% IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
+% IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
+% IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
+% IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+%
+%
+% % First Generate the righthand 3rd basis function and do training
+% if(DO_Training)
+%    GenerateBasis(CC2,CC1,1,3,3);
+%    GenerateBasis(CC2,CC1,1,3,5);
+%    GenerateBasis(CC2,CC1,1,3,7);
+%    %GenerateBasis(CC1,CC2,1,3,9);
+%    IM3_Freq = -9;% IM3_Freq;
+%
+%    [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
+%       SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
+%
+%    %Apply initial guess
+%    %All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
+%    AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+%    IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
+%       conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
+%       conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+%    %conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
+%    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+%    n = (1:length(IM3_DPD_Signal)).';
+%    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+%    PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
+%
+%    %Check How good theses still are
+%    if(USE_WARP)
+%       PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+%    else
+%       PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+%    end
+%    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+%
+%
+%    figure();
+%    %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+%    %hold on;
+%    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+%
+%    %Train with that
+%    DPD_LearningRate = 3;
+%    [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PA_InputSignal,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
+%       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+%       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
+%    disp('DPD Filtering BlockSize in msec = ');
+%    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+%
+%    %Check to see if I need more suppression
+%
+%    % Applying Third Order IM3+ Decorr DPD
+%    AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+%    IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
+%    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+%    n = (1:length(IM3_DPD_Signal)).';
+%    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+%    PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+%
+%    % Check to see that I'm not saturating anything
+%    MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
+%    MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
+%    MAX = max(MAX_real,MAX_imag);
+%    display('MAX PAin_IM3_ThirdOrderDPD =');
+%    display(MAX);
+%    if(USE_WARP)
+%       PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+%    else
+%       PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+%    end
+%    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+%
+%    figure();
+%    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+%    grid on;
+%    hold on;
+%
+% %    % Do additional training as needed.
+%
+%GenerateBasis(CC1,CC2,1,3,5);
+DPD_LearningRate = 1;
+[IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
+   SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_FifthOrder_Coeffs);
+disp('DPD Filtering BlockSize in msec = ');
+disp(1e3*DPD_FilteringBlockSize/SystemFs);
+
+% Applying 5th order IM3+ Decorr DPD
+IM3_DPD_Signal = conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs);
+IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+n = (1:length(IM3_DPD_Signal)).';
+IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+PAin_IM3_FifthOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+
+% Check to see that I'm not saturating anything
+MAX_real = max(abs(real(PAin_IM3_FifthOrderDPD)));
+MAX_imag = max(abs(imag(PAin_IM3_FifthOrderDPD)));
+MAX = max(MAX_real,MAX_imag);
+display('MAX PAin_IM3_FifthOrderDPD =');
+display(MAX);
+if(USE_WARP)
+   PA_Output_IM3_FifthOrderDPD = WARP_broadcast(PAin_IM3_FifthOrderDPD);
+else
+   PA_Output_IM3_FifthOrderDPD = MemoryLess_PA(PAin_IM3_FifthOrderDPD,MemorylessPA_Paramters);
+end
+PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
+
+figure();
+plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+grid on;
+%
 %    % Do additional training as needed. 7th
-%    
+%
 %    %GenerateBasis(CC1,CC2,1,3,7);
 %    DPD_LearningRate = 1;
 %    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
@@ -512,14 +848,14 @@ if(DO_Training)
 %       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
 %    disp('DPD Filtering BlockSize in msec = ');
 %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
-%    
+%
 %    % Applying 7th order IM3+ Decorr DPD
 %    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
 %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
 %    n = (1:length(IM3_DPD_Signal)).';
 %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
 %    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
-%    
+%
 %    % Check to see that I'm not saturating anything
 %    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
 %    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
@@ -532,12 +868,13 @@ if(DO_Training)
 %       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
 %    end
 %    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
-%    
-%    figure(100);
+%
+%    figure();
 %    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
 %    grid on;
 
-end
+%end
+
 
 %% DO it for IM5-
 PA_InputSignal = PAin_IM3_ThirdOrderDPD;
@@ -568,7 +905,7 @@ if(DO_Training)
    IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
       conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
       conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-   conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
+   %conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
    n = (1:length(IM3_DPD_Signal)).';
    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
@@ -583,14 +920,14 @@ if(DO_Training)
    %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
    
-   %figure(100);
+   %figure();
    %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
    %hold on;
    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
    
    %Train with that
    DPD_LearningRate = 3;
-   NumLearningSamples = NumLearningSamples * 4;
+   NumLearningSamples = NumLearningSamples * 2;
    [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
@@ -621,13 +958,17 @@ if(DO_Training)
    end
    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
-   figure(100);
+   %% PLOT IM5- 5th order
+   figure();
    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
    grid on;
    hold on;
 end
 
-%% DO it for IM3-
+%% IM3-
+
+
+% DO it for IM3-
 PA_InputSignal = PAin_IM3_ThirdOrderDPD;
 IM3_ThirdOrder_Coeffs = 0;Coeff_3rd(end);
 IM3_FifthOrder_Coeffs = 0;Coeff_5th(end);
@@ -639,290 +980,115 @@ IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
 
 
 % First Generate the righthand 3rd basis function and do training
-if(DO_Training)
-   GenerateBasis(CC2,CC1,1,3,3);
-   GenerateBasis(CC2,CC1,1,3,5);
-   GenerateBasis(CC2,CC1,1,3,7);
-   %GenerateBasis(CC1,CC2,1,3,9);
-   IM3_Freq = -9;% IM3_Freq;
-   
-   [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
-      SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
-   
-   %Apply initial guess
-   %All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
-      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
-      conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-   %conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
-   
-   %Check How good theses still are
-   if(USE_WARP)
-      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   else
-      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   
-   figure(100);
-   %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   %hold on;
-   %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   
-   %Train with that
-   DPD_LearningRate = 3;
-   [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PA_InputSignal,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
-      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
-   disp('DPD Filtering BlockSize in msec = ');
-   disp(1e3*DPD_FilteringBlockSize/SystemFs);
-   
-   %Check to see if I need more suppression
-   
-   % Applying Third Order IM3+ Decorr DPD
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
-   
-   % Check to see that I'm not saturating anything
-   MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
-   MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
-   MAX = max(MAX_real,MAX_imag);
-   display('MAX PAin_IM3_ThirdOrderDPD =');
-   display(MAX);
-   if(USE_WARP)
-      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   else
-      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   figure(100);
-   plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-   grid on;
-   hold on;
+GenerateBasis(CC2,CC1,1,3,3);
+GenerateBasis(CC2,CC1,1,3,5);
+GenerateBasis(CC2,CC1,1,3,7);
+%GenerateBasis(CC1,CC2,1,3,9);
+IM3_Freq = -9;% IM3_Freq;
 
+[LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
+   SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
+
+%Apply initial guess
+%All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
+AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
+   conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
+   conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+%conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
+IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+n = (1:length(IM3_DPD_Signal)).';
+IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
+
+%Check How good theses still are
+if(USE_WARP)
+   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+else
+   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
 end
-%% DO it for IM5+
-PA_InputSignal = PAin_IM3_ThirdOrderDPD;
-IM3_ThirdOrder_Coeffs = 0;
-IM3_FifthOrder_Coeffs = 0;
-IM3_SeventhOrder_Coeffs = 0;
-IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
-IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
-IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
-IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
 
 
-% First Generate the righthand 3rd basis function and do training
-if(DO_Training)
-   IM3_BasisThirdOrder  = (conj(CC2).^2).*(CC1.^3);    % 5th ORDER
-   %IM3_BasisFifthOrder  = IM3_BasisThirdOrder.*(4*(abs(CC1).^2) + 3*(abs(CC2).^2)); %7th order
-   %IM5_Basis_9thOrder  = IM5_Basis_5thOrder.*(10*(abs(CC1).^4) + 6*(abs(CC2).^4) + ...
-   %                                          20*(abs(CC1).^2).*(abs(CC2).^2));
-   %IM5_Basis_9th = [IM5_Basis_5thOrder IM5_Basis_7thOrder IM5_Basis_9thOrder];
-   IM3_Freq = IM5_Freq;
-   
-   %  [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
-   %     SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
-   
-   %Apply initial guess
-   All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
-      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
-      conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-   conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
-   
-   %Check How good theses still are
-   %if(USE_WARP)
-   %   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   %else
-   %   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   %end
-   %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   
-   %figure(100);
-   %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   %hold on;
-   %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   
-   %Train with that
-   DPD_LearningRate = 3;
-   NumLearningSamples = NumLearningSamples * 4;
-   [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
-      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
-   disp('DPD Filtering BlockSize in msec = ');
-   disp(1e3*DPD_FilteringBlockSize/SystemFs);
-   
-   %Check to see if I need more suppression
-   %IM3_ThirdOrder_Coeffs = -5i;
-   % Applying Third Order IM3+ Decorr DPD
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
-   
-   % Check to see that I'm not saturating anything
-   MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
-   MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
-   MAX = max(MAX_real,MAX_imag);
-   display('MAX PAin_IM3_ThirdOrderDPD =');
-   display(MAX);
-   if(USE_WARP)
-      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   else
-      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   figure(100);
-   plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-   grid on;
-   hold on;
+figure();
+%plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+%hold on;
+%plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+
+%Train with that
+DPD_LearningRate = 3;
+[IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PA_InputSignal,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
+   SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
+disp('DPD Filtering BlockSize in msec = ');
+disp(1e3*DPD_FilteringBlockSize/SystemFs);
+
+%Check to see if I need more suppression
+
+% Applying Third Order IM3+ Decorr DPD
+AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
+IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+n = (1:length(IM3_DPD_Signal)).';
+IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+
+% Check to see that I'm not saturating anything
+MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
+MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
+MAX = max(MAX_real,MAX_imag);
+display('MAX PAin_IM3_ThirdOrderDPD =');
+display(MAX);
+if(USE_WARP)
+   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+else
+   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
 end
+PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
 
-%% DO it for IM3-
-PA_InputSignal = PAin_IM3_ThirdOrderDPD;
-IM3_ThirdOrder_Coeffs = 0;Coeff_3rd(end);
-IM3_FifthOrder_Coeffs = 0;Coeff_5th(end);
-IM3_SeventhOrder_Coeffs = 0;%Coeff_7th(end);
-IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
-IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
-IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
-IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+figure();
+plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+grid on;
+hold on;
+%
+% %    % Do additional training as needed.
+%
+%GenerateBasis(CC1,CC2,1,3,5);
+DPD_LearningRate = 1;
+[IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
+   SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_FifthOrder_Coeffs);
+disp('DPD Filtering BlockSize in msec = ');
+disp(1e3*DPD_FilteringBlockSize/SystemFs);
 
+% Applying 5th order IM3+ Decorr DPD
+IM3_DPD_Signal = conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs);
+IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+n = (1:length(IM3_DPD_Signal)).';
+IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+PAin_IM3_FifthOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
 
-% First Generate the righthand 3rd basis function and do training
-if(DO_Training)
-   GenerateBasis(CC2,CC1,1,3,3);
-   GenerateBasis(CC2,CC1,1,3,5);
-   GenerateBasis(CC2,CC1,1,3,7);
-   %GenerateBasis(CC1,CC2,1,3,9);
-   IM3_Freq = -9;% IM3_Freq;
-   
-   [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
-      SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
-   
-   %Apply initial guess
-   %All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
-      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
-      conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-   %conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
-   
-   %Check How good theses still are
-   if(USE_WARP)
-      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   else
-      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   
-   figure(100);
-   %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   %hold on;
-   %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   
-   %Train with that
-   DPD_LearningRate = 3;
-   [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PA_InputSignal,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
-      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
-   disp('DPD Filtering BlockSize in msec = ');
-   disp(1e3*DPD_FilteringBlockSize/SystemFs);
-   
-   %Check to see if I need more suppression
-   
-   % Applying Third Order IM3+ Decorr DPD
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
-   
-   % Check to see that I'm not saturating anything
-   MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
-   MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
-   MAX = max(MAX_real,MAX_imag);
-   display('MAX PAin_IM3_ThirdOrderDPD =');
-   display(MAX);
-   if(USE_WARP)
-      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   else
-      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   figure(100);
-   plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-   grid on;
-   hold on;
-   
-%    % Do additional training as needed.
-%    
-   %GenerateBasis(CC1,CC2,1,3,5);
-   DPD_LearningRate = 1;
-   [IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
-      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_FifthOrder_Coeffs);
-   disp('DPD Filtering BlockSize in msec = ');
-   disp(1e3*DPD_FilteringBlockSize/SystemFs);
-   
-   % Applying 5th order IM3+ Decorr DPD
-   IM3_DPD_Signal = conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_FifthOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
-   
-   % Check to see that I'm not saturating anything
-   MAX_real = max(abs(real(PAin_IM3_FifthOrderDPD)));
-   MAX_imag = max(abs(imag(PAin_IM3_FifthOrderDPD)));
-   MAX = max(MAX_real,MAX_imag);
-   display('MAX PAin_IM3_FifthOrderDPD =');
-   display(MAX);
-   if(USE_WARP)
-      PA_Output_IM3_FifthOrderDPD = WARP_broadcast(PAin_IM3_FifthOrderDPD);
-   else
-      PA_Output_IM3_FifthOrderDPD = MemoryLess_PA(PAin_IM3_FifthOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
-   
-   figure(100);
-   plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-   %grid on;
-%    
+% Check to see that I'm not saturating anything
+MAX_real = max(abs(real(PAin_IM3_FifthOrderDPD)));
+MAX_imag = max(abs(imag(PAin_IM3_FifthOrderDPD)));
+MAX = max(MAX_real,MAX_imag);
+display('MAX PAin_IM3_FifthOrderDPD =');
+display(MAX);
+if(USE_WARP)
+   PA_Output_IM3_FifthOrderDPD = WARP_broadcast(PAin_IM3_FifthOrderDPD);
+else
+   PA_Output_IM3_FifthOrderDPD = MemoryLess_PA(PAin_IM3_FifthOrderDPD,MemorylessPA_Paramters);
+end
+PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
+
+figure();
+plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+grid on;
+%
 %    % Do additional training as needed. 7th
-%    
+%
 %    %GenerateBasis(CC1,CC2,1,3,7);
 %    DPD_LearningRate = 1;
 %    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
@@ -931,14 +1097,14 @@ if(DO_Training)
 %       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
 %    disp('DPD Filtering BlockSize in msec = ');
 %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
-%    
+%
 %    % Applying 7th order IM3+ Decorr DPD
 %    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
 %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
 %    n = (1:length(IM3_DPD_Signal)).';
 %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
 %    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
-%    
+%
 %    % Check to see that I'm not saturating anything
 %    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
 %    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
@@ -951,12 +1117,17 @@ if(DO_Training)
 %       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
 %    end
 %    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
-%    
-%    figure(100);
+%
+%    figure();
 %    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
 %    grid on;
 
-end
+%end
+
+
+
+
+
 
 
 
@@ -974,21 +1145,21 @@ if(DO_Training)
    GenerateBasis(CC1,CC2,1,3,7);
    %GenerateBasis(CC1,CC2,1,3,9);
    IM3_ThirdOrder_Coeffs   =    9.9735 - 1.3809i%39.2965 +10.5928i;
-IM3_FifthOrder_Coeffs   =     4.6695 + 0.1715i%1.5774 + 3.5535i;
-IM3_SeventhOrder_Coeffs =   -6.7504 + 0.8415i%  -7.2355 - 2.0117i;
-IM3_NinthOrder_Coeffs   =  0;%3.8273 + 0.1256i;
-
-
-IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
-IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
-IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
-IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
-
-
-IM3_Freq = 3*(CarrierSpacing/2);
+   IM3_FifthOrder_Coeffs   =     4.6695 + 0.1715i%1.5774 + 3.5535i;
+   IM3_SeventhOrder_Coeffs =   -6.7504 + 0.8415i%  -7.2355 - 2.0117i;
+   IM3_NinthOrder_Coeffs   =  0;%3.8273 + 0.1256i;
    
-%   [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
-%      SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
+   
+   IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
+   IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
+   IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
+   IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+   
+   
+   IM3_Freq = 3*(CarrierSpacing/2);
+   
+   %   [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
+   %      SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
    
    %Apply initial guess
    %All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
@@ -1011,7 +1182,7 @@ IM3_Freq = 3*(CarrierSpacing/2);
    %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
    
-   %figure(100);
+   %figure();
    %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
    %hold on;
    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
@@ -1048,80 +1219,80 @@ IM3_Freq = 3*(CarrierSpacing/2);
    end
    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
-   figure(100);
+   figure();
    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
    grid on;
    hold on;
    
-%    %Do additional training as needed.
-%    
-%    %GenerateBasis(CC1,CC2,1,3,5);
-%    DPD_LearningRate = 1;
-%    [IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
-%       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-%       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_FifthOrder_Coeffs);
-%    disp('DPD Filtering BlockSize in msec = ');
-%    disp(1e3*DPD_FilteringBlockSize/SystemFs);
-%    
-%    % Applying 5th order IM3+ Decorr DPD
-%    IM3_DPD_Signal = conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs);
-%    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-%    n = (1:length(IM3_DPD_Signal)).';
-%    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-%    PAin_IM3_FifthOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
-%    
-%    % Check to see that I'm not saturating anything
-%    MAX_real = max(abs(real(PAin_IM3_FifthOrderDPD)));
-%    MAX_imag = max(abs(imag(PAin_IM3_FifthOrderDPD)));
-%    MAX = max(MAX_real,MAX_imag);
-%    display('MAX PAin_IM3_FifthOrderDPD =');
-%    display(MAX);
-%    if(USE_WARP)
-%       PA_Output_IM3_FifthOrderDPD = WARP_broadcast(PAin_IM3_FifthOrderDPD);
-%    else
-%       PA_Output_IM3_FifthOrderDPD = MemoryLess_PA(PAin_IM3_FifthOrderDPD,MemorylessPA_Paramters);
-%    end
-%    PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
-%    
-%    figure(100);
-%    %plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-%    grid on;
-%    
-%    %Do additional training as needed. 7th
-%    
-%    %GenerateBasis(CC1,CC2,1,3,7);
-%    DPD_LearningRate = 1;
-%    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
-%       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-%       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
-%    disp('DPD Filtering BlockSize in msec = ');
-%    disp(1e3*DPD_FilteringBlockSize/SystemFs);
-%    
-%    % Applying 7th order IM3+ Decorr DPD
-%    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-%    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-%    n = (1:length(IM3_DPD_Signal)).';
-%    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-%    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
-%    
-%    % Check to see that I'm not saturating anything
-%    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
-%    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
-%    MAX = max(MAX_real,MAX_imag);
-%    display('MAX PAin_IM3_SeventhOrderDPD =');
-%    display(MAX);
-%    if(USE_WARP)
-%       PA_Output_IM3_SeventhOrderDPD = WARP_broadcast(PAin_IM3_SeventhOrderDPD);
-%    else
-%       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
-%    end
-%    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
-%    
-%    figure(100);
-%    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-%    grid on;
+   %    %Do additional training as needed.
+   %
+   %    %GenerateBasis(CC1,CC2,1,3,5);
+   %    DPD_LearningRate = 1;
+   %    [IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
+   %       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   %       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   %       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_FifthOrder_Coeffs);
+   %    disp('DPD Filtering BlockSize in msec = ');
+   %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   %
+   %    % Applying 5th order IM3+ Decorr DPD
+   %    IM3_DPD_Signal = conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs);
+   %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   %    n = (1:length(IM3_DPD_Signal)).';
+   %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   %    PAin_IM3_FifthOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+   %
+   %    % Check to see that I'm not saturating anything
+   %    MAX_real = max(abs(real(PAin_IM3_FifthOrderDPD)));
+   %    MAX_imag = max(abs(imag(PAin_IM3_FifthOrderDPD)));
+   %    MAX = max(MAX_real,MAX_imag);
+   %    display('MAX PAin_IM3_FifthOrderDPD =');
+   %    display(MAX);
+   %    if(USE_WARP)
+   %       PA_Output_IM3_FifthOrderDPD = WARP_broadcast(PAin_IM3_FifthOrderDPD);
+   %    else
+   %       PA_Output_IM3_FifthOrderDPD = MemoryLess_PA(PAin_IM3_FifthOrderDPD,MemorylessPA_Paramters);
+   %    end
+   %    PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
+   %
+   %    figure();
+   %    %plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+   %    grid on;
+   %
+   %    %Do additional training as needed. 7th
+   %
+   %    %GenerateBasis(CC1,CC2,1,3,7);
+   %    DPD_LearningRate = 1;
+   %    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
+   %       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   %       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   %       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
+   %    disp('DPD Filtering BlockSize in msec = ');
+   %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   %
+   %    % Applying 7th order IM3+ Decorr DPD
+   %    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+   %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   %    n = (1:length(IM3_DPD_Signal)).';
+   %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   %    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
+   %
+   %    % Check to see that I'm not saturating anything
+   %    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
+   %    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
+   %    MAX = max(MAX_real,MAX_imag);
+   %    display('MAX PAin_IM3_SeventhOrderDPD =');
+   %    display(MAX);
+   %    if(USE_WARP)
+   %       PA_Output_IM3_SeventhOrderDPD = WARP_broadcast(PAin_IM3_SeventhOrderDPD);
+   %    else
+   %       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
+   %    end
+   %    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
+   %
+   %    figure();
+   %    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+   %    grid on;
 end
 
 
@@ -1151,7 +1322,7 @@ if(DO_Training)
    %All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
    %AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
    %IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
-      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
+   conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
       conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
    %conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
    %IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
@@ -1168,7 +1339,7 @@ if(DO_Training)
    %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
    
-   %figure(100);
+   %figure();
    %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
    %hold on;
    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
@@ -1205,279 +1376,279 @@ if(DO_Training)
    end
    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
    
-   figure(100);
+   figure();
    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
    grid on;
    hold on;
    
    % Do additional training as needed.
    
-%    %GenerateBasis(CC1,CC2,1,3,5);
-%    DPD_LearningRate = 1;
-%    [IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
-%       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-%       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_FifthOrder_Coeffs);
-%    disp('DPD Filtering BlockSize in msec = ');
-%    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+      %GenerateBasis(CC1,CC2,1,3,5);
+      DPD_LearningRate = 1;
+      [IM3_FifthOrder_Coeffs, Coeff_5th] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisFifthOrder.',MemoryLessPA,MemoryLessDPD, ...
+         SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+         0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+         DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_FifthOrder_Coeffs);
+      disp('DPD Filtering BlockSize in msec = ');
+      disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   
+      % Applying 5th order IM3+ Decorr DPD
+      IM3_DPD_Signal = conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs);
+      IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+      n = (1:length(IM3_DPD_Signal)).';
+      IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+      PAin_IM3_FifthOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+   
+      % Check to see that I'm not saturating anything
+      MAX_real = max(abs(real(PAin_IM3_FifthOrderDPD)));
+      MAX_imag = max(abs(imag(PAin_IM3_FifthOrderDPD)));
+      MAX = max(MAX_real,MAX_imag);
+      display('MAX PAin_IM3_FifthOrderDPD =');
+      display(MAX);
+      if(USE_WARP)
+         PA_Output_IM3_FifthOrderDPD = WARP_broadcast(PAin_IM3_FifthOrderDPD);
+      else
+         PA_Output_IM3_FifthOrderDPD = MemoryLess_PA(PAin_IM3_FifthOrderDPD,MemorylessPA_Paramters);
+      end
+      PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
+   
+      figure();
+      plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+      grid on;
+   %
+   %    %% Do additional training as needed. 7th
+   %
+   %    %GenerateBasis(CC1,CC2,1,3,7);
+   %    DPD_LearningRate = 1;
+   %    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
+   %       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+   %       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+   %       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
+   %    disp('DPD Filtering BlockSize in msec = ');
+   %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+   %
+   %    % Applying 7th order IM3+ Decorr DPD
+   %    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+   %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+   %    n = (1:length(IM3_DPD_Signal)).';
+   %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+   %    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
+   %
+   %    % Check to see that I'm not saturating anything
+   %    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
+   %    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
+   %    MAX = max(MAX_real,MAX_imag);
+   %    display('MAX PAin_IM3_SeventhOrderDPD =');
+   %    display(MAX);
+   %    if(USE_WARP)
+   %       PA_Output_IM3_SeventhOrderDPD = WARP_broadcast(PAin_IM3_SeventhOrderDPD);
+   %    else
+   %       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
+   %    end
+   %    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
+   %
+   %    figure();
+   %    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+   %    grid on;
+   
+end
+
+
+% %% DO it for IM5+
+% PA_InputSignal = PAin_IM3_ThirdOrderDPD;
+% IM3_ThirdOrder_Coeffs = 0;
+% IM3_FifthOrder_Coeffs = 0;
+% IM3_SeventhOrder_Coeffs = 0;
+% IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
+% IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
+% IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
+% IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+% 
+% 
+% % First Generate the righthand 3rd basis function and do training
+% if(DO_Training)
+%    IM3_BasisThirdOrder  = (conj(CC2).^2).*(CC1.^3);    % 5th ORDER
+%    %IM3_BasisFifthOrder  = IM3_BasisThirdOrder.*(4*(abs(CC1).^2) + 3*(abs(CC2).^2)); %7th order
+%    %IM5_Basis_9thOrder  = IM5_Basis_5thOrder.*(10*(abs(CC1).^4) + 6*(abs(CC2).^4) + ...
+%    %                                          20*(abs(CC1).^2).*(abs(CC2).^2));
+%    %IM5_Basis_9th = [IM5_Basis_5thOrder IM5_Basis_7thOrder IM5_Basis_9thOrder];
+%    IM3_Freq = IM5_Freq;
 %    
-%    % Applying 5th order IM3+ Decorr DPD
-%    IM3_DPD_Signal = conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs);
+%    %  [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
+%    %     SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
+%    
+%    %Apply initial guess
+%    All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
+%    AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+%    IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
+%       conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
+%       conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+%    %   conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
 %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
 %    n = (1:length(IM3_DPD_Signal)).';
 %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-%    PAin_IM3_FifthOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+%    PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
 %    
-%    % Check to see that I'm not saturating anything
-%    MAX_real = max(abs(real(PAin_IM3_FifthOrderDPD)));
-%    MAX_imag = max(abs(imag(PAin_IM3_FifthOrderDPD)));
-%    MAX = max(MAX_real,MAX_imag);
-%    display('MAX PAin_IM3_FifthOrderDPD =');
-%    display(MAX);
-%    if(USE_WARP)
-%       PA_Output_IM3_FifthOrderDPD = WARP_broadcast(PAin_IM3_FifthOrderDPD);
-%    else
-%       PA_Output_IM3_FifthOrderDPD = MemoryLess_PA(PAin_IM3_FifthOrderDPD,MemorylessPA_Paramters);
-%    end
-%    PA_Output_IM3_FifthOrderDPD = PA_Output_IM3_FifthOrderDPD(100:end-100);
+%    %Check How good theses still are
+%    %if(USE_WARP)
+%    %   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+%    %else
+%    %   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+%    %end
+%    %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
 %    
-%    %figure(100);
-%    %plot_freqdomain(PA_Output_IM3_FifthOrderDPD,SystemFs,'','k',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-%    %grid on;
 %    
-%    %% Do additional training as needed. 7th
+%    %figure();
+%    %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+%    %hold on;
+%    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
 %    
-%    %GenerateBasis(CC1,CC2,1,3,7);
-%    DPD_LearningRate = 1;
-%    [IM3_SeventhOrder_Coeffs, Coeff_7th] = BlockDecorrDPD_MEM(PAin_IM3_FifthOrderDPD,IM3_BasisSeventhOrder.',MemoryLessPA,MemoryLessDPD, ...
+%    %Train with that
+%    DPD_LearningRate = 3;
+%    NumLearningSamples = NumLearningSamples;
+%    [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
 %       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
 %       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_SeventhOrder_Coeffs);
+%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
 %    disp('DPD Filtering BlockSize in msec = ');
 %    disp(1e3*DPD_FilteringBlockSize/SystemFs);
 %    
-%    % Applying 7th order IM3+ Decorr DPD
-%    IM3_DPD_Signal = conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+%    %Check to see if I need more suppression
+%    %IM3_ThirdOrder_Coeffs = -5i;
+%    % Applying Third Order IM3+ Decorr DPD
+%    AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+%    IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
 %    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
 %    n = (1:length(IM3_DPD_Signal)).';
 %    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-%    PAin_IM3_SeventhOrderDPD   = PAin_IM3_FifthOrderDPD + IM3_DPD_Signal;
+%    PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
 %    
 %    % Check to see that I'm not saturating anything
-%    MAX_real = max(abs(real(PAin_IM3_SeventhOrderDPD)));
-%    MAX_imag = max(abs(imag(PAin_IM3_SeventhOrderDPD)));
+%    MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
+%    MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
 %    MAX = max(MAX_real,MAX_imag);
-%    display('MAX PAin_IM3_SeventhOrderDPD =');
+%    display('MAX PAin_IM3_ThirdOrderDPD =');
 %    display(MAX);
 %    if(USE_WARP)
-%       PA_Output_IM3_SeventhOrderDPD = WARP_broadcast(PAin_IM3_SeventhOrderDPD);
+%       PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
 %    else
-%       PA_Output_IM3_SeventhOrderDPD = MemoryLess_PA(PA_Output_IM3_SeventhOrderDPD,MemorylessPA_Paramters);
+%       PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
 %    end
-%    PA_Output_IM3_SeventhOrderDPD = PA_Output_IM3_SeventhOrderDPD(100:end-100);
+%    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
 %    
-%    figure(100);
-%    plot_freqdomain(PA_Output_IM3_SeventhOrderDPD,SystemFs,'','g',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+%    figure();
+%    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
 %    grid on;
-
-end
-
-
-%% DO it for IM5+
-PA_InputSignal = PAin_IM3_ThirdOrderDPD;
-IM3_ThirdOrder_Coeffs = 0;
-IM3_FifthOrder_Coeffs = 0;
-IM3_SeventhOrder_Coeffs = 0;
-IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
-IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
-IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
-IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
-
-
-% First Generate the righthand 3rd basis function and do training
-if(DO_Training)
-   IM3_BasisThirdOrder  = (conj(CC2).^2).*(CC1.^3);    % 5th ORDER
-   %IM3_BasisFifthOrder  = IM3_BasisThirdOrder.*(4*(abs(CC1).^2) + 3*(abs(CC2).^2)); %7th order
-   %IM5_Basis_9thOrder  = IM5_Basis_5thOrder.*(10*(abs(CC1).^4) + 6*(abs(CC2).^4) + ...
-   %                                          20*(abs(CC1).^2).*(abs(CC2).^2));
-   %IM5_Basis_9th = [IM5_Basis_5thOrder IM5_Basis_7thOrder IM5_Basis_9thOrder];
-   IM3_Freq = IM5_Freq;
-   
-   %  [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
-   %     SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
-   
-   %Apply initial guess
-   All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
-      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
-      conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-   conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
-   
-   %Check How good theses still are
-   %if(USE_WARP)
-   %   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   %else
-   %   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   %end
-   %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   
-   %figure(100);
-   %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   %hold on;
-   %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   
-   %Train with that
-   DPD_LearningRate = 3;
-   NumLearningSamples = NumLearningSamples * 4;
-   [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
-      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
-   disp('DPD Filtering BlockSize in msec = ');
-   disp(1e3*DPD_FilteringBlockSize/SystemFs);
-   
-   %Check to see if I need more suppression
-   %IM3_ThirdOrder_Coeffs = -5i;
-   % Applying Third Order IM3+ Decorr DPD
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
-   
-   % Check to see that I'm not saturating anything
-   MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
-   MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
-   MAX = max(MAX_real,MAX_imag);
-   display('MAX PAin_IM3_ThirdOrderDPD =');
-   display(MAX);
-   if(USE_WARP)
-      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   else
-      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   figure(100);
-   plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-   grid on;
-   hold on;
-end
-
-%% DO it for IM5-
-PA_InputSignal = PAin_IM3_ThirdOrderDPD;
-IM3_ThirdOrder_Coeffs = 0;
-IM3_FifthOrder_Coeffs = 0;
-IM3_SeventhOrder_Coeffs = 0;
-IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
-IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
-IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
-IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
-
-
-% First Generate the righthand 3rd basis function and do training
-if(DO_Training)
-   IM3_BasisThirdOrder  = (conj(CC1).^2).*(CC2.^3);    % 5th ORDER
-   %IM3_BasisFifthOrder  = IM3_BasisThirdOrder.*(4*(abs(CC1).^2) + 3*(abs(CC2).^2)); %7th order
-   %IM5_Basis_9thOrder  = IM5_Basis_5thOrder.*(10*(abs(CC1).^4) + 6*(abs(CC2).^4) + ...
-   %                                          20*(abs(CC1).^2).*(abs(CC2).^2));
-   %IM5_Basis_9th = [IM5_Basis_5thOrder IM5_Basis_7thOrder IM5_Basis_9thOrder];
-   IM3_Freq = -IM5_Freq;
-   
-   %  [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
-   %     SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
-   
-   %Apply initial guess
-   All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
-      conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
-      conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
-   conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
-   
-   %Check How good theses still are
-   %if(USE_WARP)
-   %   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   %else
-   %   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   %end
-   %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   
-   %figure(100);
-   %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   %hold on;
-   %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
-   
-   %Train with that
-   DPD_LearningRate = 3;
-   NumLearningSamples = NumLearningSamples * 4;
-   [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
-      SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
-      0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
-      DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
-   disp('DPD Filtering BlockSize in msec = ');
-   disp(1e3*DPD_FilteringBlockSize/SystemFs);
-   
-   %Check to see if I need more suppression
-   %IM3_ThirdOrder_Coeffs = -5i;
-   % Applying Third Order IM3+ Decorr DPD
-   AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
-   IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
-   IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
-   n = (1:length(IM3_DPD_Signal)).';
-   IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
-   PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
-   
-   % Check to see that I'm not saturating anything
-   MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
-   MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
-   MAX = max(MAX_real,MAX_imag);
-   display('MAX PAin_IM3_ThirdOrderDPD =');
-   display(MAX);
-   if(USE_WARP)
-      PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
-   else
-      PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
-   end
-   PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
-   
-   figure(100);
-   plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
-   grid on;
-   hold on;
-end
-
-
-
-
-
-%% plots
-
-length_coeffs = length(Coeff_3rd);
-Coeff_3rd = [Coeff_3rd; (zeros(2*length_coeffs,1)+IM3_ThirdOrder_Coeffs+IM3_ThirdOrder_Coeffs_start)];
-Coeff_5th = [zeros(1*length_coeffs,1)+IM3_FifthOrder_Coeffs_start; Coeff_5th; (zeros(1*length_coeffs,1)+IM3_FifthOrder_Coeffs+IM3_FifthOrder_Coeffs_start)];
-Coeff_7th = [zeros(2*length_coeffs,1)+IM3_SeventhOrder_Coeffs_start; Coeff_7th];
-%Coeff_9th = [zeros(3*162,1)+IM3_NinthOrder_Coeffs_start; Coeff_9th];
-
-Samples = 1:length(Coeff_3rd);
-TimeAxis = (Samples*DPD_FilteringBlockSize/SystemFs)*1e3;
-
-figure();
-plot(TimeAxis,abs(Coeff_3rd));
-hold on;
-plot(TimeAxis,abs(Coeff_5th));
-plot(TimeAxis,abs(Coeff_7th));
-grid on;
-%plot(TimeAxis,abs(Coeff_9th));
+%    hold on;
+% end
+% 
+% %% DO it for IM5-
+% PA_InputSignal = PAin_IM3_ThirdOrderDPD;
+% IM3_ThirdOrder_Coeffs = 0;
+% IM3_FifthOrder_Coeffs = 0;
+% IM3_SeventhOrder_Coeffs = 0;
+% IM3_ThirdOrder_Coeffs_start   = IM3_ThirdOrder_Coeffs;
+% IM3_FifthOrder_Coeffs_start   = IM3_FifthOrder_Coeffs;
+% IM3_SeventhOrder_Coeffs_start = IM3_SeventhOrder_Coeffs;
+% IM3_NinthOrder_Coeffs_start   = IM3_NinthOrder_Coeffs;
+% 
+% 
+% % First Generate the righthand 3rd basis function and do training
+% if(DO_Training)
+%    IM3_BasisThirdOrder  = (conj(CC1).^2).*(CC2.^3);    % 5th ORDER
+%    %IM3_BasisFifthOrder  = IM3_BasisThirdOrder.*(4*(abs(CC1).^2) + 3*(abs(CC2).^2)); %7th order
+%    %IM5_Basis_9thOrder  = IM5_Basis_5thOrder.*(10*(abs(CC1).^4) + 6*(abs(CC2).^4) + ...
+%    %                                          20*(abs(CC1).^2).*(abs(CC2).^2));
+%    %IM5_Basis_9th = [IM5_Basis_5thOrder IM5_Basis_7thOrder IM5_Basis_9thOrder];
+%    IM3_Freq = -IM5_Freq;
+%    
+%    %  [LoopDelay, FeedBackFilter] = DPD_LoopDelayEst(PA_InputSignal, IM3_BasisThirdOrder, MemoryLessPA, ...
+%    %     SystemFs,Signal_Bandwidth,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,0);
+%    
+%    %Apply initial guess
+%    All_Coeffs = [IM3_ThirdOrder_Coeffs; IM3_FifthOrder_Coeffs; IM3_SeventhOrder_Coeffs; IM3_NinthOrder_Coeffs];
+%    AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+%    IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs) + ...
+%       conv(IM3_BasisFifthOrder,IM3_FifthOrder_Coeffs) +...
+%       conv(IM3_BasisSeventhOrder,IM3_SeventhOrder_Coeffs);
+%    %conv(IM3_BasisNinthOrder,IM3_NinthOrder_Coeffs);
+%    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+%    n = (1:length(IM3_DPD_Signal)).';
+%    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+%    PAin_IM3_ThirdOrderDPD   = PA_InputSignal + IM3_DPD_Signal;
+%    
+%    %Check How good theses still are
+%    %if(USE_WARP)
+%    %   PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+%    %else
+%    %   PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+%    %end
+%    %PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+%    
+%    
+%    %figure();
+%    %plot_freqdomain(PA_OutputSignal,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+%    %hold on;
+%    %plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','r',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);     %Plot without DPD
+%    
+%    %Train with that
+%    DPD_LearningRate = 3;
+%    NumLearningSamples = NumLearningSamples * 2;
+%    [IM3_ThirdOrder_Coeffs, Coeff_3rd] = BlockDecorrDPD_MEM(PAin_IM3_ThirdOrderDPD,IM3_BasisThirdOrder.',MemoryLessPA,MemoryLessDPD, ...
+%       SystemFs,IM3_Freq,MemorylessPA_Paramters,MemoryPA_Paramters,Memory_depth,LoopDelay,....
+%       0,DPD_LearningBlockSize,DPD_FilteringBlockSize,FeedBackFilter,...
+%       DPD_LearningRate,NumLearningSamples,1,Sparsity_Indx,IM3_ThirdOrder_Coeffs);
+%    disp('DPD Filtering BlockSize in msec = ');
+%    disp(1e3*DPD_FilteringBlockSize/SystemFs);
+%    
+%    %Check to see if I need more suppression
+%    %IM3_ThirdOrder_Coeffs = -5i;
+%    % Applying Third Order IM3+ Decorr DPD
+%    AdaptiveFilterDelay  = length(IM3_ThirdOrder_Coeffs) - 1;
+%    IM3_DPD_Signal = conv(IM3_BasisThirdOrder,IM3_ThirdOrder_Coeffs);
+%    IM3_DPD_Signal = IM3_DPD_Signal(1:end-AdaptiveFilterDelay);
+%    n = (1:length(IM3_DPD_Signal)).';
+%    IM3_DPD_Signal = IM3_DPD_Signal.*exp(2*pi*1i*n*IM3_Freq*1e6/SystemFs);
+%    PAin_IM3_ThirdOrderDPD   = PAin_IM3_ThirdOrderDPD + IM3_DPD_Signal;
+%    
+%    % Check to see that I'm not saturating anything
+%    MAX_real = max(abs(real(PAin_IM3_ThirdOrderDPD)));
+%    MAX_imag = max(abs(imag(PAin_IM3_ThirdOrderDPD)));
+%    MAX = max(MAX_real,MAX_imag);
+%    display('MAX PAin_IM3_ThirdOrderDPD =');
+%    display(MAX);
+%    if(USE_WARP)
+%       PA_Output_IM3_ThirdOrderDPD = WARP_broadcast(PAin_IM3_ThirdOrderDPD);
+%    else
+%       PA_Output_IM3_ThirdOrderDPD = MemoryLess_PA(PAin_IM3_ThirdOrderDPD,MemorylessPA_Paramters);
+%    end
+%    PA_Output_IM3_ThirdOrderDPD = PA_Output_IM3_ThirdOrderDPD(100:end-100);
+%    
+%    figure();
+%    plot_freqdomain(PA_Output_IM3_ThirdOrderDPD,SystemFs,'','b',UpsamplingFactor,POWER_PLOT_1MHZ,Pout_dBm);
+%    grid on;
+%    hold on;
+% end
+% 
+% 
+% 
+% 
+% 
+% %% plots
+% 
+% length_coeffs = length(Coeff_3rd);
+% Coeff_3rd = [Coeff_3rd; (zeros(2*length_coeffs,1)+IM3_ThirdOrder_Coeffs+IM3_ThirdOrder_Coeffs_start)];
+% Coeff_5th = [zeros(1*length_coeffs,1)+IM3_FifthOrder_Coeffs_start; Coeff_5th; (zeros(1*length_coeffs,1)+IM3_FifthOrder_Coeffs+IM3_FifthOrder_Coeffs_start)];
+% Coeff_7th = [zeros(2*length_coeffs,1)+IM3_SeventhOrder_Coeffs_start; Coeff_7th];
+% %Coeff_9th = [zeros(3*162,1)+IM3_NinthOrder_Coeffs_start; Coeff_9th];
+% 
+% Samples = 1:length(Coeff_3rd);
+% TimeAxis = (Samples*DPD_FilteringBlockSize/SystemFs)*1e3;
+% 
+% figure();
+% plot(TimeAxis,abs(Coeff_3rd));
+% hold on;
+% plot(TimeAxis,abs(Coeff_5th));
+% plot(TimeAxis,abs(Coeff_7th));
+% grid on;
+% %plot(TimeAxis,abs(Coeff_9th));

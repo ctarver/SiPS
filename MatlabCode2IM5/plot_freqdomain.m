@@ -1,5 +1,5 @@
 function f = plot_freqdomain(Rx_Signal,fs,TITLE,colour,UpsamplingFactor,POWER_PLOT_1MHZ,PA_Power_Measured)
-
+hold off;
 if POWER_PLOT_1MHZ
     
     L = length(Rx_Signal);
@@ -25,7 +25,7 @@ else
     Signal_PSD = 10*log10(fftshift(pwelch(Rx_Signal,Window)));
     PA_Max = max(Signal_PSD);
     var = (-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437;
-    plot([(-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437],[-36*ones(length(var),1)],'Color','k')
+    plot([(-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437],[-35*ones(length(var),1)],'Color','k')
     hold on;
     plot((-1:2/Nfft:1-2/Nfft)*(fs/(2e6))+2437,Signal_PSD-PA_Max,'LineWidth',1,'Color','k'); 
     title(TITLE)
