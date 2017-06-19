@@ -63,12 +63,20 @@ grestore
 %
 \begin{document}
 
-\title{Low-complexity, Multi Sub-band Digital Predistortion:%\thanks{Grants or other notes
-%about the article that should go on the front page should be
-%placed here. General acknowledgments should be placed at the end of the article.}
+\title{Low-complexity, Multi Sub-band Digital Predistortion:
+		\thanks{This work was supported by the Finnish Funding Agency for Technology
+		and Innovation (Tekes) under the project “Future Small-Cell Networks using
+		Reconfigurable Antennas (FUNERA).” This work was also supported in part
+		by the US National Science Foundation under grants ECCS-1408370, ECCS-
+		1232274, and CNS-1265332 in the WiFiUS program. The work was also
+		funded by the Academy of Finland under the projects 288670 “Massive MIMO:
+		Advanced Antennas, Systems and Signal Processing at mm-Waves,” 284694
+		“Fundamentals of Ultra Dense 5G Networks with Application to Machine Type
+		Communication,” and 301820 “Competitive Funding to Strengthen University
+		Research Proles,” and by the Linz Center of Mechatronics (LCM) in the
+		framework of the Austrian COMET-K2 programme..}
 }
 \subtitle{Novel Algorithms and SDR Verification}
-
 %\titlerunning{Short form of title}        % if too long for running head
 
 \author{Chance Tarver         \and
@@ -128,7 +136,7 @@ This intermodulation distortion can be severe and violate emission requirements 
 \begin{figure}
 	\centering
 	%\vspace{0.5cm}
-	\centerline{\includegraphics[width=\columnwidth]{./Figures/PSD.pdf}}
+	\centerline{\includegraphics[width=\columnwidth]{PSD.pdf}}
 	\caption[]{Power spectral density of a non-contiguous signal after being applied through a nonlinear PA.
 		Nonlinearity orders up to the seventh are shown in the third-order and fifth-order intermodulation products (IM3 and IM5).}
 	\label{fig:PSD}
@@ -325,14 +333,58 @@ v^\pm_9(n) &= u^\pm_9(n) - \frac{dot(u^\pm_9(n),v^\pm_3(n))}{||v^\pm_3(n)||^2} v
 Despite the reduced complexity that is achieved from the proposed sequential DPD learning, the learning time is now increased compared to the case when we learn all the DPD nonlinearity orders concurrently. 
 Two algorithm modifications are thus proposed in the next section for improving the convergence speed of the proposed DPD.
 
-\import{./}{Section_Speedup.tex}
+%\import{./}{Section_Speedup.tex}
+\section{Improving Convergence Speed of the Proposed DPD}
+\label{sec:ConvergenceSpeed}
+In the previous section, a trade-off was made between hardware complexity and convergence time. We introduce two methods to help relax the extra time that is necessary to converge sequentially. 
+Firstly, we modify the learning rate, and secondly, we modify the starting coefficients.
+
+The first modification involves adjusting the learning rate $\mu$ in (\ref{eq:BlockAdaptive}) depending on the residual correlation between the observed spurious IMD at the PA output and the nonlinear basis functions representing this IMD.
+We allow $\mu$ to take on two values, $\mu_1$ and $\mu_2$ where $\mu_1 > \mu_2$. 
+This ensures fast convergence while not sacrificing the steady state error. 
+We also establish a threshold, $\gamma$, and a confidence metric, $\nu$. 
+The change to $\mu$ is decided as shown in Algorithm \ref{alg:mu}.
+The threshold, $\gamma$, and the confidence metric $\nu$ are chosen based on experimental results over a wide range of carrier allocation scenarios and power levels. 
+This helps ensure that the basis functions and the spurious IMD have actually decorrelated and that we do not switch $\mu$ too soon due to fluctuations in the correlation.
+\begin{algorithm}[h]
+	\SetAlgoLined
+	\textit{count} = 0\;
+	$\mu = \mu_1$\;
+	\While{DPD Training}
+	{
+		\textbf{Send} block\;
+		\textbf{Receive} block\;
+		\textbf{Calculate} \textit{correlation}\;
+		\If{correlation $< \gamma$}
+		{
+			$count = count + 1$\; 
+		}
+		\If{count $\geq \nu$}
+		{
+			$\mu = \mu_2$\; 
+		}
+	}
+	\caption{Adaptive $\mu$ update procedure.}
+	\label{alg:mu}
+\end{algorithm}
+
+
+The second modification involves adjusting the starting point for the DPD training. 
+In (\ref{eq:BlockAdaptive}), $\bar{\boldsymbol{\alpha}}(0) = \mathbf{0}$. 
+If we were to start closer to the final coefficient, there would be less change necessary and hence the convergence time could be much faster. 
+We propose storing the final coefficients from various transmit scenarios. 
+Then, whenever the same transmit scenario is used again, we can retrain by starting from the previous value. The previous coefficients should be similar, but retraining allows us to overcome possible variations due to temperature, power levels, etc. 
+
+If we slightly change a TX parameter such as the gain of the PA so that we are at a new scenario, it may not be necessary to start our training from zero. Instead, as we collect DPD coefficients from a variety of scenarios, we can perform a linear interpolation to fill in the blanks. By starting the DPD training from an interpolated guess, we can reduce the training time for new scenarios.
+
+
 
 \section{Overall DPD System Flow}
 \label{sec:SystemFlow}
 \begin{figure*}
 	\centering
 	%\vspace{0.5cm}
-	\centerline{\includegraphics[width=0.89\textwidth]{./Figures/SubBandSystemNew.pdf}}
+	\centerline{\includegraphics[width=0.89\textwidth]{SubBandSystemNew.pdf}}
 	\caption[]{Flow chart of the proposed iterative sub-band DPD solution.}
 	\label{fig:SystemFlowChart}
 \end{figure*}
@@ -351,7 +403,168 @@ Once the spurious emission is below the threshold, we search for another spur th
 This serves as a starting point for whenever the transmission scenarios are repeated and for interpolation of other values. 
 In the next section, comprehensive experimental results are presented using the \textsc{Warp}Lab setup demonstrating the effectiveness of the proposed DPD solution.
 
-\import{./}{Section_WarpLabResults.tex}
+%\import{./}{Section_WarpLabResults.tex}
+\section{\textsc{Warp}Lab Results}
+\label{sec:WARPLabResults}
+The methods presented previously in the paper were tested using the \textsc{Warp}Lab framework on the \textsc{Warp}v3 board. 
+\textsc{Warp} is a software-defined radio platform that allows for rapid prototyping by interfacing with \textsc{Matlab} to perform the baseband signal processing  \cite{warpProject}. 
+A photo of the experimental setup is shown in Fig. \ref{fig:exp_setup}. 
+For these experiments, the DPD processing is done on the host CPU, but the broadcasting is done on the \textsc{Warp} radio hardware which includes the Maxim MAX2829 transceiver and the Anadigics AWL6951 PA.
+
+\begin{figure}[]
+	\centering
+	%\vspace{0.5cm}
+	\includegraphics[width=0.75\columnwidth]{Setup.jpg}
+	\caption{The \textsc{Warp}v3 board interfaces with \textsc{Matlab} via an Ethernet cable connected to a PC. The TX port is directly connected to the RX port via a 30 dB directional coupler for the feedback loop during training.}
+	\label{fig:exp_setup}
+\end{figure}
+
+\subsection{IM3$\pm$ Iterations}
+We began by testing the iterative method presented in Section \ref{sec:Analysis}. 
+An LTE uplink signal was generated in \textsc{Matlab} with two non-contiguous carriers. 
+One carrier was 3 MHz and the other was 1.4 MHz. 
+Both carriers had 64 QAM subcarrier modulation. 
+The frequency domain results at each iteration are shown in Fig. \ref{fig:RightThenLeft}. 
+The IM3+ spur was trained first using seventh-order DPD processing, and suppression was achieved as evident in the red curve. 
+However, the IM3- spur magnitude was increased slightly which is consistent with (\ref{eq:IM3_-}). 
+We then trained the IM3- spur (yellow curve). 
+Again, there was a negative effect on the opposite spur, so we retrained the IM3+ spur (purple curve). 
+At this point, we were satisfied with the performance and quit training. 
+
+\begin{figure}[t!] 
+	\centering
+	sing \includegraphics[width=0.9\columnwidth]{RightThenLeft_NEW}
+	\caption{Normalized spectral result when using the iterative method to suppress both the IM3+ and the IM3- spurs.}
+	\label{fig:RightThenLeft}
+\end{figure}
+
+\subsection{Sequential Learning}
+As presented in Section \ref{sec:Sequential_Learning}, we then tested the sequential learning concept in \textsc{Warp}Lab where we started with low-order nonlinearities and added higher orders as needed. 
+In Fig. \ref{fig:ConcurrentConvergence}, we show an example for comparison using the previously developed concurrent training method. 
+We then switched to using the new sequential method as seen in Fig. \ref{fig:SequentialConvergence}. For these two experiments, the same LTE uplink signal and setup were used. 
+We see that all the coefficients converged to approximately the same value. 
+In Fig. \ref{fig:IterativeSpectrumvsConcurrent}, we show the results in the frequency domain on the IM3+ spur. 
+From these figures, it is evident that the final result is equivalent and the only difference is the amount of time it takes to train.
+
+\begin{figure}[t!] 
+	\centering
+	\includegraphics[width=0.9\columnwidth]{ConcurrentConvergence}
+	\caption{Example DPD coefficient convergence when concurrent training is used. 
+		By training multiple orders concurrently, convergence occurs more rapidly at the price of additional hardware complexity when compared to sequential learning.}
+	\label{fig:ConcurrentConvergence}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\columnwidth]{SequentialConvergence}
+	\caption{\textsc{Warp}Lab testing of sequential learning of DPD coefficients. 
+		By training multiple orders sequentially, convergence occurs more slowly with the benefit of less hardware complexity when compared to concurrent learning.}
+	\label{fig:SequentialConvergence}
+\end{figure}
+
+\begin{figure}[t!] 
+	\centering
+	\includegraphics[width=0.9\columnwidth]{IterativeSpectrumvsConcurrent}
+	\caption{PSD result when using the concurrent and sequentially trained coefficients to suppress the IM3+ spur. 
+		This shows nearly identical performance between the methods.}
+	\label{fig:IterativeSpectrumvsConcurrent}
+	%\vspace{-10pt}
+\end{figure}
+
+\subsection{Speed-up Methods}
+The convergence time for sequential training is longer than training in parallel as discussed earlier and shown in Figures \ref{fig:ConcurrentConvergence} and \ref{fig:SequentialConvergence}. 
+To overcome this, we tested the previously presented methods for speeding up the convergence time.
+
+\begin{figure}[t] 
+	\centering
+	\includegraphics[width=0.9\columnwidth]{Convergence_Mu}
+	\caption{Correlation vs. block index during DPD training. 
+		As training progresses the correlation decreases. 
+		Once it is below the threshold for a total number of times greater than the confidence metric, we change to the lower learning rate.}
+	\label{fig:Convergence_Mu}
+	%\vspace{-10pt}
+\end{figure}
+
+We tested the adaptive $\mu$ concept presented by Algorithm 1. 
+In Fig. \ref{fig:Convergence_Mu}, we show the correlation between the error block and the LMS reference block as the algorithm converges. 
+As the DPD coefficient convergences (shown in blue), the correlation decreases (shown in orange). 
+When it is below the threshold ($\gamma$) of 0.05 (shown in red) more than 5 times (the confidence metric, $\nu$), the learning rate changes from $\mu = 4$ to $\mu = 0.7$. 
+This change of $\mu$ is denoted by the dashed line. 
+The values were determined experimentally to what worked well for a variety of scenarios as determined by the authors. 
+
+We then tested the concept of starting the DPD coefficient at a value based off the interpolation of other trained values. 
+When using \textsc{Warp}Lab, there is an RF gain parameter that sets the gain for the PA. This value is an integer between zero and sixty-three with approximately half a dB of gain per integer increase of this parameter. We started with an RF gain parameter of 45 where we trained from a starting point of zero. Then, we increased the RF gain to 55 where we again trained from 0. At each, the coefficients converged smoothly with sufficient suppression. 
+
+We then choose to work at an RF gain of 50. We linearly interpolated from the two values previously stored. We then started training from this point. The training is shown in Figure \ref{fig:Interpolate}. Based off the sequential, LMS training, a small update to the interpolation guess is made. 
+
+\begin{figure}[t!] 
+	\centering
+	\includegraphics[]{Interpolate} 
+	\caption{Convergence of the DPD coefficients after interpolating from previously learned coefficients.}
+	\label{fig:Interpolate}
+	%\vspace{-10pt}
+\end{figure}
+
+As we continue to transmit under various conditions, the interpolations become more accurate. Eventually, a complete table of DPD coefficients is formed. Then whenever we need to broadcast, we can simply load the previous coefficients and quickly update them to account for small fluctuations if needed. 
+
+\subsection{Full System Verification}
+We then put everything together in \textsc{Warp}Lab to follow the process shown in Figure \ref{fig:SystemFlowChart} where multiple spurs need to be under a threshold. The previously discussed speed-up methods are applied in the training process. Two LTE carriers are broadcast. The two carriers are set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable in the \textsc{Warp} board's 40 MHz RF Bandwidth. For this experiment, we set a threshold that the spurs must be 35 dB below the main carriers. The results are plotted in the Figure \ref{fig:IM5}.
+
+\begin{figure}
+	\centering
+	\includegraphics[]{IM5Spectrum}
+	\caption{Normalized spectral result when using the iterative method to make sure both IM3 and both IM5 spurious emissions are below the threshold}
+	\label{fig:IM5}
+\end{figure}
+
+\begin{table}
+	\begin{tabular}{c l c|r r r r}
+		
+		\multicolumn{3}{c|}{Training Step}  & \multicolumn{4}{c}{Result (dB)} \\ 
+		\hline 
+		Step & Spur & Order & IM5-  & IM3- & IM3+ & IM5+ \\ 
+		\hline 
+		0 & - & - & -38.7 & -28.0 & -27.9 & -38.8 \\ 
+		
+		1 & IM3+ & 3 & -37.3 & -27.4 & -34.4 & -36.7 \\ 
+		
+		2 & IM3+ & 5 & -37.2 & -27.4 & -36.9 & -36.4 \\ 
+		
+		3 & IM3- & 3 & -35.9 & -33.9 & -35.5 & -34.9 \\ 
+		
+		4 & IM3- & 5 & -35.0 & -37.0 & -35.8 & -34.5 \\ 
+		
+		5 & IM5+ & 5 & -34.5 & -33.15 & -34.5 & -43.0 \\ 
+		
+		6 & IM3- & 5 & -33.6 & -37.1 & -34.3 & -44.4 \\ 
+		
+		7 & IM5- & 5 & -42.9 & -32.0 & -33.5 & -44.0 \\ 
+		
+		8 & IM3- & 5 & -45.1 & -37.6 & -33.2 & -44.0 \\ 
+		
+		9 & IM3+ & 3 & -43.2 & -32.3 & -36.8 & -42.6 \\ 
+		
+		10 & IM3- & 5 & -44.6 & -37.5 & -37.0 & -42.5 \\ 
+		
+	\end{tabular} 
+	\caption{Results of the intermediate training steps in the multi sub-band DPD from Figure \ref{fig:IM5}.}
+	\label{tab:IM5}
+\end{table}
+
+We assume this to be a new configuration where we start with no know coefficients; every coefficient gets initialized to zero. The non-contiguous signal is broadcast over the \textsc{Warp} board, and the spectrum for this is shown as the blue curve in Figure \ref{fig:IM5}. We identify the IM3+ spur as the most severe and train on it. There is some suppression, but it does not completely meet the threshold. We train another order on the IM3+ spur and then continue the process until the final result shown in black is achieved. During the process, the mutual effect of one DPD training negatively impacts the other spurs and causes additional steps in the multi sub-band DPD. All of the intermediate results are shown Table \ref{tab:IM5}.
+
+
+
+%\begin{figure}[t!] 
+%\centering
+%\includegraphics[width=\columnwidth]{Figures/UseOldCoeff_IncreasePower_PSD}
+%\caption{}
+%\label{fig:UseOldCoeff_IncreasePower_PSD}
+%\end{figure}
+
+
+
+
 
 \section{Conclusion}
 In this paper an iterative, multi sub-band DPD learning algorithm has been presented that can suppress the IM3 and IM5 spurious emissions. 
