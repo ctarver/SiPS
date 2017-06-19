@@ -8,29 +8,30 @@ The first modification involves adjusting the learning rate $\mu$ in (\ref{eq:Bl
  This ensures fast convergence while not sacrificing the steady state error. 
  We also establish a threshold, $\gamma$, and a confidence metric, $\nu$. 
  The change to $\mu$ is decided as shown in Algorithm \ref{alg:mu}.
-\begin{algorithm}[h]
-\SetAlgoLined
-\textit{count} = 0\;
-$\mu = \mu_1$\;
- \While{DPD Training}
- {
-  \textbf{Send} block\;
-  \textbf{Receive} block\;
-  \textbf{Calculate} \textit{correlation}\;
-  \If{correlation $< \gamma$}
-  {
-   $count = count + 1$\; 
-  }
-  \If{count $\geq \nu$}
-  {
-   $\mu = \mu_2$\; 
-  }
- }
-\caption{Adaptive $\mu$ update procedure.}
-\label{alg:mu}
-\end{algorithm}
 The threshold, $\gamma$, and the confidence metric $\nu$ are chosen based on experimental results over a wide range of carrier allocation scenarios and power levels. 
-This helps ensure that the basis functions and the spurious IMD have actually decorrelated, and that we do not switch $\mu$ too soon due to fluctuations in the correlation.
+This helps ensure that the basis functions and the spurious IMD have actually decorrelated and that we do not switch $\mu$ too soon due to fluctuations in the correlation.
+\begin{algorithm}[h]
+	\SetAlgoLined
+	\textit{count} = 0\;
+	$\mu = \mu_1$\;
+	\While{DPD Training}
+	{
+		\textbf{Send} block\;
+		\textbf{Receive} block\;
+		\textbf{Calculate} \textit{correlation}\;
+		\If{correlation $< \gamma$}
+		{
+			$count = count + 1$\; 
+		}
+		\If{count $\geq \nu$}
+		{
+			$\mu = \mu_2$\; 
+		}
+	}
+	\caption{Adaptive $\mu$ update procedure.}
+	\label{alg:mu}
+\end{algorithm}
+
 
 The second modification involves adjusting the starting point for the DPD training. 
 In (\ref{eq:BlockAdaptive}), $\bar{\boldsymbol{\alpha}}(0) = \mathbf{0}$. 
