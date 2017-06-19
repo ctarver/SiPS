@@ -27,7 +27,7 @@ At this point, we were satisfied with the performance and quit training.
 
 \begin{figure}[t!] 
 \centering
-\includegraphics[width=0.9\columnwidth]{Figures/RightThenLeft_NEW}
+sing \includegraphics[width=0.9\columnwidth]{Figures/RightThenLeft_NEW}
 \caption{Normalized spectral result when using the iterative method to suppress both the IM3+ and the IM3- spurs.}
 \label{fig:RightThenLeft}
 \end{figure}
@@ -87,7 +87,7 @@ The values were determined experimentally to what worked well for a variety of s
 \end{figure}
 
 We then tested the concept of starting the DPD coefficient at a value based off the interpolation of other trained values. 
-When using WARPLab, there is an RF gain parameter that sets the gain for the PA. This value is an integer between zero and sixty-three with approximately half a dB of gain per increase unit. We started with an RF gain parameter of 45 where we trained from a starting point of zero. Then, we increased the RF gain to 55 where we again trained from 0. At each, the coefficients converged smoothly with sufficient suppression. 
+When using \textsc{Warp}Lab, there is an RF gain parameter that sets the gain for the PA. This value is an integer between zero and sixty-three with approximately half a dB of gain per integer increase of this parameter. We started with an RF gain parameter of 45 where we trained from a starting point of zero. Then, we increased the RF gain to 55 where we again trained from 0. At each, the coefficients converged smoothly with sufficient suppression. 
 
 We then choose to work at an RF gain of 50. We linearly interpolated from the two values previously stored. We then started training from this point. The training is shown in Figure \ref{fig:Interpolate}. Based off the sequential, LMS training, a small update to the interpolation guess is made. 
 
@@ -102,7 +102,7 @@ We then choose to work at an RF gain of 50. We linearly interpolated from the tw
  As we continue to transmit under various conditions, the interpolations become more accurate. Eventually, a complete table of DPD coefficients is formed. Then whenever we need to broadcast, we can simply load the previous coefficients and quickly update them to account for small fluctuations if needed. 
  
  \subsection{Full System Verification}
- We then put everything together in \textsc{Warp}Lab to follow the process shown in Figure \ref{fig:SystemFlowChart} where multiple spurs need to be under a threshold. The previously discussed speed-up methods are applied in the training process. Two LTE carriers are broadcast. The two carriers are set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable in the WARP board's 40 MHz RF Bandwidth. For this experiment, we set a threshold that the spurs must be -35 dB below the main carriers. The results are plotted in the figure \ref{fig:IM5}.
+ We then put everything together in \textsc{Warp}Lab to follow the process shown in Figure \ref{fig:SystemFlowChart} where multiple spurs need to be under a threshold. The previously discussed speed-up methods are applied in the training process. Two LTE carriers are broadcast. The two carriers are set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable in the \textsc{Warp} board's 40 MHz RF Bandwidth. For this experiment, we set a threshold that the spurs must be 35 dB below the main carriers. The results are plotted in the Figure \ref{fig:IM5}.
  
  \begin{figure}
  	\centering
@@ -111,7 +111,7 @@ We then choose to work at an RF gain of 50. We linearly interpolated from the tw
  	\label{fig:IM5}
  \end{figure}
  
- We assume this to be a new configuration where we start with no know coefficients; every coefficient gets initialized to zero. The non-contiguous signal is broadcast over the WARP board, and the spectrum for this is shown as the blue curve in Figure \ref{fig:IM5}. We identify the IM3+ spur as the most severe and train on it. There is some suppression, but it does not completely meet the threshold. We train another order on the IM3+ spur and then continue the process until the final result shown in black is achieved. During the process, the mutual effect of one DPD training negatively impacts the other spurs and causes additional steps in the multi sub-band DPD. All of the intermediate results are shown Table \ref{tab:IM5}.
+ We assume this to be a new configuration where we start with no know coefficients; every coefficient gets initialized to zero. The non-contiguous signal is broadcast over the \textsc{Warp} board, and the spectrum for this is shown as the blue curve in Figure \ref{fig:IM5}. We identify the IM3+ spur as the most severe and train on it. There is some suppression, but it does not completely meet the threshold. We train another order on the IM3+ spur and then continue the process until the final result shown in black is achieved. During the process, the mutual effect of one DPD training negatively impacts the other spurs and causes additional steps in the multi sub-band DPD. All of the intermediate results are shown Table \ref{tab:IM5}.
  
  \begin{table}
  \begin{tabular}{c l c|r r r r}

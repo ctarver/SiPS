@@ -116,7 +116,7 @@ A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excelle
 \section{Introduction}
 To meet increasing data-rate needs of mobile users, devices will need access to more of the radio spectrum. 
 This is challenging considering the massive expected increase in the already large number of connected devices \cite{Cisco16}.
-This leads to what is referred to as spectrum scarcity \cite{Staple04,Federated17}. 
+This leads to what is referred to as spectrum scarcity and fragmentation \cite{Staple04,Federated17}. 
 In scenarios where there is little available bandwidth, it may be necessary to aggregate spectrum opportunistically, potentially across multiple bands non-contiguously. 
 This sort of frequency-agile system has been adopted in protocols and standards such as in LTE-Advanced with carrier aggregation \cite{wannstrom_2013} and will likely also play a role in 5G communications \cite{Khan2014}.  
 
@@ -154,16 +154,16 @@ However, the third-order IMD (IM3) sub-bands were considered separately while no
 An \textsc{fpga} implementation of this solution has also been presented by the authors in \cite{Asilomar2015} demonstrating real-time processing of the adaptive DPD learning solution.
 
 An extension of the DPD solution in \cite{ICASSP2014,Asilomar2015} was proposed in \cite{Tarver16}, where an iterative learning algorithm is used between the right and left IM3 sub-bands until they are both properly suppressed. 
-Moreover, in \cite{TMTT_SubbandDPD}, higher nonlinearity orders were introduced in addition to the third-order nonlinearity processing in \cite{ICASSP2014,Asilomar2015}. 
 A \textsc{Warp}Lab implementation of an iterative version of this higher order sub-band DPD was also presented  with additional ideas added to reduce the complexity and/or improve the learning speed of the proposed DPD. 
+Moreover, in \cite{TMTT_SubbandDPD}, higher nonlinearity orders were introduced in addition to the third-order nonlinearity processing in \cite{ICASSP2014,Asilomar2015}. 
 
 In this paper, we extend the work from \cite{Tarver16} to include processing for the fifth-order intermodulation products (IM5) and include new interpolation based speed-up methods. In summary, this paper includes:
 \begin{itemize}
-	\item An iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them. This improves the flexibility and potentially reduces complexity when compared to a full-band system in that learning can be focused only on sub-bands that are in violation of emission limits. 
+	\item An iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them. This improves the flexibility and potentially reduces complexity when compared to a full-band DPD system in that learning can be focused only on sub-bands that are in violation of emission limits. 
 	\item The learning of the higher-order nonlinearities in each sub-band is done sequentially, one basis function at a time in ascending order. 
 	This has the advantage of reducing the hardware complexity by essentially using one learning module for all the nonlinearity orders. 
 	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity.
-	\item In order to improve the convergence speed of the proposed solution, two modifications have been introduced in this paper. 
+	\item In order to improve the convergence speed of the proposed solution, two modifications have been adopted in this paper. 
 	The first is using a variable learning rate during the DPD coefficient learning to have a fast convergence at the initial phase of the learning while not sacrificing the steady-state error. 
 	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning once the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
 	\item A \textsc{Warp}Lab implementation is done demonstrating effective performance of the proposed solution using real hardware equipment. 
@@ -354,7 +354,7 @@ In the next section, comprehensive experimental results are presented using the 
 \import{./}{Section_WarpLabResults.tex}
 
 \section{Conclusion}
-In this paper an iterative sub-band DPD learning algorithm has been presented that can suppress the IM3 and IM5 spurious emissions. 
+In this paper an iterative, multi sub-band DPD learning algorithm has been presented that can suppress the IM3 and IM5 spurious emissions. 
 A sequential learning procedure where higher nonlinearity orders were added one at a time was also presented in order to reduce the complexity and add flexibility to the DPD solution. 
 Additionally, the convergence speed of the proposed DPD has been improved by two methods, while not sacrificing the DPD performance. 
 The first used a variable learning rate which switches from high speed to lower speed once the loop becomes close to convergence. 
