@@ -411,6 +411,7 @@ In the next section, comprehensive experimental results are presented using the 
 \label{sec:WARPLabResults}
 The methods presented previously in the paper were tested using the \textsc{Warp}Lab framework on the \textsc{Warp}v3 board. 
 \textsc{Warp} is a software-defined radio platform that allows for rapid prototyping by interfacing with \textsc{Matlab} to perform the baseband signal processing  \cite{warpProject}. 
+{\color{red} The \textsc{Warp} board is similar to other SDR boards like the popular \textsc{Usrp} boards from Ettus Research/National Instruments in that they allow for rapid prototyping via software such at \textsc{Matlab}. The \textsc{Warp} board is however superior for our purposes in that, unlike the \textsc{Usrp}, it includes a PA.}
 A photo of the experimental setup is shown in Fig. \ref{fig:exp_setup}. 
 For these experiments, the DPD processing is done on the host CPU, but the broadcasting is done on the \textsc{Warp} radio hardware which includes the Maxim MAX2829 transceiver and the Anadigics AWL6951 PA.
 
