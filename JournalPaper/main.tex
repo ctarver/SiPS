@@ -337,6 +337,12 @@ Despite the reduced complexity that is achieved from the proposed sequential DPD
 Two algorithm modifications are thus proposed in the next section for improving the convergence speed of the proposed DPD.
 
 %\import{./}{Section_Speedup.tex}
+\begin{figure*}[]
+	\centering
+	\includegraphics[]{blockdiagram}
+	\caption{Block diagram of the system architecture. }
+	\label{fig:blockdiagram}
+\end{figure*}
 \section{Improving Convergence Speed of the Proposed DPD}
 \label{sec:ConvergenceSpeed}
 In the previous section, a trade-off was made between hardware complexity and convergence time. We introduce two methods to help relax the extra time that is necessary to converge sequentially. 
@@ -380,19 +386,17 @@ Then, whenever the same transmit scenario is used again, we can retrain by start
 
 If we slightly change a TX parameter such as the gain of the PA so that we are at a new scenario, it may not be necessary to start our training from zero. Instead, as we collect DPD coefficients from a variety of scenarios, we can perform a linear interpolation to fill in the blanks. By starting the DPD training from an interpolated guess, we can reduce the training time for new scenarios.
 
-
-
 \section{Overall DPD System Flow}
 \label{sec:SystemFlow}
 \begin{figure*}
 	\centering
 	%\vspace{0.5cm}
 	\centerline{\includegraphics[width=0.89\textwidth]{SubBandSystemNew.pdf}}
-	\caption[]{Flow chart of the proposed iterative sub-band DPD solution.}
+	\caption[]{System flow chart of the proposed iterative sub-band DPD solution with speed-up methods.}
 	\label{fig:SystemFlowChart}
 \end{figure*}
 In this section, the overall flow of the proposed DPD processing is summarized and presented, thus putting all the bits and pieces together. 
-Fig. \ref{fig:SystemFlowChart} presents a flow chart illustrating the overall DPD system processing including the iterative IMD learning and sequential learning for the higher nonlinearity orders.
+{\color{red}In Figure \ref{fig:blockdiagram}, we present the system architecture for the DPD learning. This architecture shows the lower-level algorithm for performing the DPD learning. This architecture will be used in a method shown by the higher-level flow chart in Fig. \ref{fig:SystemFlowChart} which presents the overall DPD system processing including the iterative IMD learning, sequential learning for the higher nonlinearity orders, and the speed-up methods.}
 
 The system begins by applying stored coefficients if they are available. 
 If they are not available, the system will interpolate from other previously stored values if possible or set the DPD coefficients to zero. 
