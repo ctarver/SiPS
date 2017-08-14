@@ -48,6 +48,7 @@ grestore
 \usepackage{amsmath,graphicx}
 \usepackage{import}
 \usepackage[ruled]{algorithm2e}
+\usepackage{color}
 %
 % \usepackage{mathptmx}      % use Times fonts if available on your TeX system
 %
@@ -130,7 +131,9 @@ This sort of frequency-agile system has been adopted in protocols and standards 
 
 For cases where spectrum is aggregated in a non-continuous manner, challenges arise in the radio frontend design. 
 In particular, the power amplifier (PA) becomes problematic. 
-The PA is inherently a nonlinear device \cite{Ghannouchi09}, and whenever non-contiguous signals pass through this nonlinearity they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum as illustrated in Figure \ref{fig:PSD}. These spurious emissions or ``spurs" could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
+The PA is inherently a nonlinear device \cite{Ghannouchi09}, and whenever non-contiguous signals pass through this nonlinearity they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum as illustrated in Figure \ref{fig:PSD}.
+{\color{red} The undesirable effects from the nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}.}
+These spurious emissions or ``spurs" could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
 This intermodulation distortion can be severe and violate emission requirements in standards such as the 3GPP LTE-Advanced or other FCC standards    \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
 
 \begin{figure}

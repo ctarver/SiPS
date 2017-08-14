@@ -1,0 +1,82 @@
+\documentclass[]{article}
+\usepackage{fullpage}
+%opening
+\title{Response to Editors and Reviewers}
+\date{\vspace{-5ex}}
+\author{\vspace{-5ex}}
+\setlength\parindent{0pt}
+\usepackage{color}
+
+\begin{document}
+
+\maketitle
+
+\paragraph{Paper Title:} Low-complexity, Multi Sub-band Digital Predistortion: Novel Algorithms and SDR Verification \\
+\textbf{Authors:} Chance Tarver, Mahmoud Abdelaziz, Lauri Anttila, Mikko Valkama, Joseph~R.~Cavallaro\\
+\textbf{Manuscript ID:} VLSI-D-17-00269\\
+
+Dear editors and anonymous reviewers,\\
+
+
+This revised manuscript entitled ``Low-complexity, Multi Sub-band Digital Predistortion: Novel Algorithms and SDR Verification" is a revised version of the manuscript VLSI-D-17-00269. 
+Thank you reviewers and editors for the time and effort spent on our paper. We appreciate the thoughtful comments.
+We have responded to these comments one by one in this letter. 
+We have also updated the manuscript accordingly including, e.g., a
+block diagram. 
+All bigger major to the manuscript are written in {\color{red} red font} while other, smaller-scale additions and corrections of typos have been implemented.\\
+
+Sincerely,\\
+
+Chance Tarver, Mahmoud Abdelaziz, Lauri Anttila, Mikko Valkama, Joseph~R.~Cavallaro\\
+
+Houston, TX; Tampere, Finland; August 16, 2017
+
+
+\newpage
+\section{Response to Reviewer 1}
+\paragraph{Reviewer overview:} \textit{An extension of the DPD solution in [15, 20] was proposed in [21], where an iterative learning algorithm is used between the right and left IM3 sub-bands until they are both properly suppressed. (Better to have numbers based on frequencies F1/F2/2F1-F2/2F2-F1)}
+
+\paragraph{Response:}
+Thank you for your overview.
+
+The notation is not perfect. However, we choose to remain consistent with the notation we've adopted in previous publications. 
+
+
+\paragraph{Comment 1:}\textit{The Intermodulation/ACP is also depend on the PAR and the peaks from the Waveforms. I don't see term like PAR/Peak/CFR.}
+
+\paragraph{Response:}
+This comment is a valuable critique of the paper. We add the following statement to the introduction to further motivate the need for DPD by highlighting that the PAPR of modern signals is not friendly with PAs. 
+ 
+{\color{red}``The undesirable effects from the nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR)."}
+
+\paragraph{Comment 2:}\textit{IMD/Intermodulation's/Third order non-linearities are mixes, may be reduce the complexity and stick to one of them.}
+\paragraph{Response:}
+Thank you for pointing out the inconsistency. We have tried to resolve this throughout the paper. 
+	
+\paragraph{Comment 3:}\textit{The DPD curve achieved through the PA feedback path, nothing mentioned in the Document.}
+\paragraph{Response:}
+	
+\paragraph{Comment 4:}\textit{Nothing mentioned about currents and Efficiency. Document Missing technical terms. could be better if we add top level block diagram.
+}
+\paragraph{Response:}
+	
+
+\section{Response to Reviewer 2}
+\paragraph{Comment 1:}\textit{The first concern is on the iterative processing method. Yes, this method can guarantee better performance. But, how to evaluate the increased latency?}
+\paragraph{Response:}
+
+\paragraph{Comment 2:}\textit{It is mentioned that the learning is based on the serial processing manner for hardware complexity consideration. However, this will further increase the latency.}
+\paragraph{Response:}
+	
+\paragraph{Comment 3:}\textit{For the convergence speed up, both adaption and on-the-fly storage are adopted. However, both methods will introduce complexity. Authors should comment on the balance of performance and complexity.}
+\paragraph{Response:}
+	
+\paragraph{Comment 4:}\textit{It is good the design is implemented by WarpLab. It would be better if the authors can compare this.}
+\paragraph{Response:}
+\paragraph{Comment 5:}\textit{It is not suggested to have Figure 2 occupy the entire page.}
+\paragraph{Response:}
+				
+
+
+
+\end{document}
