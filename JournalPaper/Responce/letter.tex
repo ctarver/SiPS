@@ -37,9 +37,7 @@ Houston, TX; Tampere, Finland; August 16, 2017
 \paragraph{Reviewer overview:} \textit{An extension of the DPD solution in [15, 20] was proposed in [21], where an iterative learning algorithm is used between the right and left IM3 sub-bands until they are both properly suppressed. (Better to have numbers based on frequencies F1/F2/2F1-F2/2F2-F1)}
 
 \paragraph{Response:}
-Thank you for your overview.
-
-The notation is not perfect. However, we choose to remain consistent with the notation we've adopted in previous publications. 
+Thank you for your overview. The notation is not perfect. However, we choose to remain consistent with the notation we've adopted in previous publications. 
 
 
 \paragraph{Comment 1:}\textit{The Intermodulation/ACP is also depend on the PAR and the peaks from the Waveforms. I don't see term like PAR/Peak/CFR.}
@@ -51,7 +49,9 @@ This comment is a valuable critique of the paper. We add the following statement
 
 \paragraph{Comment 2:}\textit{IMD/Intermodulation's/Third order non-linearities are mixes, may be reduce the complexity and stick to one of them.}
 \paragraph{Response:}
-Thank you for pointing out the inconsistency. We have tried to resolve this throughout the paper. 
+Thank you for pointing out the inconsistency and need for clarity. We have tried to resolve this throughout the paper. It is important to clarify the scope of each term. Intermodulation refers to the general phenomenon of the mixing of multiple carriers due to the nonlinearities. Intermodulation distortions (IMDs) is still a general term that refers to any of the distortions caused by the intermodulation. In this paper, we only examine the spurious intermodulation distortion emissions. IM3, IM5 refers to specific intermodulation distortions. These are found via $n f_1 - m f_2$ where $n,m$ are positive integers and $f_1, f_2$ are the frequencies of the main carriers. IM3s occur when $n+m = 3$. Similarly for other IMDs. Each IMD contains a signal created as the sum of various nonlinear orders. For example, the IM3 spur contains 3rd order, 5th order, 7th order, etc. terms. Assuming there's no memory for simplicity, $y_{IM3+} = u_3^{3+} + u_5^{3+} + u_7^{3+} + ...$ where the nonlinear basis functions, $u$, are defined starting at Equation 8.
+
+We have added the following to the paper to help with this.
 	
 \paragraph{Comment 3:}\textit{The DPD curve achieved through the PA feedback path, nothing mentioned in the Document.}
 \paragraph{Response:}
@@ -59,17 +59,27 @@ Thank you for pointing out the inconsistency. We have tried to resolve this thro
 \paragraph{Comment 4:}\textit{Nothing mentioned about currents and Efficiency. Document Missing technical terms. could be better if we add top level block diagram.
 }
 \paragraph{Response:}
-	
+It would be beneficial to study the efficiency. However, that is outside the scope of this work. Instead, we reference the reader to multiple sources that show that the PA operates more efficiently in the nonlinear, saturation region and that DPD can allow for this sort of transmission while reducing the likelihood of violating the emissions masks. 
+
+We have attempted to add more technical terms throughout such as the reference to PAPR. 
+
+The addition of a block diagram is a great suggestion that will enhance the paper. We have made one and added it.
+
 
 \section{Response to Reviewer 2}
 \paragraph{Comment 1:}\textit{The first concern is on the iterative processing method. Yes, this method can guarantee better performance. But, how to evaluate the increased latency?}
 \paragraph{Response:}
+This method does not guarantee better performance. This method is used solely for the purpose of reducing hardware complexity. This does comes at the price of increased latency that we try to relax through our speed-up techniques. 
 
 \paragraph{Comment 2:}\textit{It is mentioned that the learning is based on the serial processing manner for hardware complexity consideration. However, this will further increase the latency.}
 \paragraph{Response:}
+Thank you for the comment. We have tried to add more transparency by adding additional statments throughout acknowledging this weakness in the method. The serial processing does increase latency.
 	
 \paragraph{Comment 3:}\textit{For the convergence speed up, both adaption and on-the-fly storage are adopted. However, both methods will introduce complexity. Authors should comment on the balance of performance and complexity.}
 \paragraph{Response:}
+Thank you for this insight. We believe that this is a minor addition in complexity. The serial processing was meant to reduce the hardware computational complexity needed in the FPGA as well as the need for multiple feedback paths from the RF which would require multiple downconverters and ADCs.
+
+In comparison, a small memory for storing old coefficients is mostly only an increase on the area requirements. A lookup is not costly. Then a single linear interpolation is also hardly a burden on the complexity.
 	
 \paragraph{Comment 4:}\textit{It is good the design is implemented by WarpLab. It would be better if the authors can compare this.}
 \paragraph{Response:}
