@@ -95,7 +95,7 @@ grestore
 	\email{\{cat12,cavallar\}@rice.edu}           %  \\
 	%             \emph{Present address:} of F. Author  %  if needed
 	\and
-	Mahmoud Abdelaziz, Lauri Anttila and Mikko Valkama \at
+	Mahmoud Abdelaziz, Lauri Anttila, and Mikko Valkama \at
 	Department of Electronics and Communication Engineering\\
 	Tampere University of Technology, Finland
 }
@@ -111,11 +111,11 @@ grestore
 %Recommended: 150 to 250 word
 \begin{abstract}
 The nonlinearities of power amplifiers combined with non-contiguous transmissions found in modern, frequency-agile, wireless standards create undesirable spurious emissions through the nearby spectrum of data carriers.
-Digital predistortion (DPD) is an effective way of combating spurious emission violations without the need of a significant power reduction in the transmitter which can provide better power efficiency and network coverage. 
-In this paper an iterative, multi sub-band version of the sub-band DPD, proposed earlier by the authors, is presented. 
+Digital predistortion (DPD) is an effective way of combating spurious emission violations without the need for a significant power reduction in the transmitter leading to better power efficiency and network coverage. 
+In this paper, an iterative, multi sub-band version of the sub-band DPD, proposed earlier by the authors, is presented. 
 The DPD learning is iterated over intermodulation distortion (IMD) sub-bands until a satisfactory performance is achieved for each of them. 
-A sequential DPD learning procedure is also presented in order to reduce the hardware complexity when higher order nonlinearities are incorporated in the DPD learning. 
-Improvements on the convergence speed of the adaptive DPD learning are also achieved via incorporating a variable learning rate and interpolation of previously trained DPD coefficients. 
+A sequential DPD learning procedure is also presented to reduce the hardware complexity when higher order nonlinearities are incorporated in the DPD learning. 
+Improvements in the convergence speed of the adaptive DPD learning are also achieved via incorporating a variable learning rate and interpolation of previously trained DPD coefficients. 
 A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excellent suppression of the targeted spurious emissions. 
 \keywords{Adaptive filters \and carrier aggregation \and digital predistortion \and nonlinear distortion \and power amplifier \and software-defined radio \and spectrally-agile radio \and spurious emission. }
 % \PACS{PACS code1 \and PACS code2 \and more}
@@ -123,16 +123,16 @@ A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excelle
 \end{abstract}
 
 \section{Introduction}
-To meet increasing data-rate needs of mobile users, devices will need access to more of the radio spectrum. 
-This is challenging considering the massive expected increase in the already large number of connected devices \cite{Cisco16}.
+Mobile devices need to access more radio spectrum to meet the increasing data-rate demands of mobile users. 
+This is particularly challenging when we compound this with the growing number of wireless devices  \cite{Cisco16}.
 This leads to what is referred to as spectrum scarcity and fragmentation \cite{Staple04,Federated17}. 
 In scenarios where there is little available bandwidth, it may be necessary to aggregate spectrum opportunistically, potentially across multiple bands non-contiguously. 
 This sort of frequency-agile system has been adopted in protocols and standards such as in LTE-Advanced with carrier aggregation \cite{wannstrom_2013} and will likely also play a role in 5G communications \cite{Khan2014}.  
 
 For cases where spectrum is aggregated in a non-continuous manner, challenges arise in the radio frontend design. 
 In particular, the power amplifier (PA) becomes problematic. 
-The PA is inherently a nonlinear device \cite{Ghannouchi09}, and whenever non-contiguous signals pass through this nonlinearity they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum as illustrated in Figure \ref{fig:PSD}. 
-{\color{red} For example, if there exists carriers at frequencies $f_1$ and $f_2$, there will be third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
+The PA is inherently a nonlinear device \cite{Ghannouchi09}, and whenever non-contiguous signals pass through this nonlinearity, they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum as illustrated in Figure \ref{fig:PSD}. 
+{\color{red} For example, if carriers exist at frequencies $f_1$ and $f_2$, there will be third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
 These spurious emissions or ``spurs" could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
 If severe enough, they may violate emission requirements in standards such as the 3GPP LTE-Advanced or other FCC standards  \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
 
@@ -145,8 +145,8 @@ If severe enough, they may violate emission requirements in standards such as th
 	\label{fig:PSD}
 \end{figure}
 
-{\color{red} The undesirable effects from the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}. Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at a cost of a poorer error-vector magnitude. So although it may help, it may not be enough \cite{CFR}.} 
-In conjuction with CFR, to avoid violating the strict emission requirements, devices may need to also considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
+{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}. Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at the cost of a poorer error-vector magnitude. So although it may help, it may not be enough \cite{CFR}.} 
+In conjunction with CFR, to avoid violating the strict emission requirements, devices may need to also considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
 However, reducing the transmit power in order to satisfy the emission mask will necessarily reduce the uplink coverage and the energy efficiency of the PA. 
  \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz,Katz16}. 
 
@@ -175,9 +175,9 @@ In this paper, we extend the work from \cite{Tarver16} to include processing for
 	\item The learning of the higher-order nonlinearities in each sub-band is done sequentially, one basis function at a time in ascending order. 
 	This has the advantage of reducing the hardware complexity by essentially using one learning module for all the nonlinearity orders. 
 	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity.
-	\item In order to improve the convergence speed of the proposed solution, two modifications have been adopted in this paper. 
-	The first is using a variable learning rate during the DPD coefficient learning to have a fast convergence at the initial phase of the learning while not sacrificing the steady-state error. 
-	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning once the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
+	\item To improve the convergence speed of the proposed solution, two modifications have been adopted in this paper. 
+	The first is using a variable learning rate during the DPD coefficient learning to have a fast convergence during the initial phase of the learning while not sacrificing the steady-state error. 
+	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning anytime the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
 	\item A \textsc{Warp}Lab implementation is done demonstrating effective performance of the proposed solution using real hardware equipment. 
 \end{itemize}
 
@@ -244,7 +244,7 @@ In \cite{ICASSP2014}, the learning of the DPD parameter $\alpha$, for the IM3+ s
 This correlation minimization will eventually minimize the distortion at the considered sub-band effectively, as demonstrated in \cite{ICASSP2014,Asilomar2015}. 
 However, optimizing the DPD parameter $\alpha$ to minimize the power at the IM3+ sub-band, will affect the IM3- sub-band as well, as shown in (\ref{eq:IM3_+}) and (\ref{eq:IM3_-}). 
 That is why an iterative sub-band DPD learning is proposed in this paper, in the case multiple IMD sub-bands are required to be mitigated effectively. 
-First we start by learning the DPD coefficients for the most extreme IMD sub-band, then after injecting its DPD cancellation signal, the emissions at other sub-bands are raised a little above their original levels due to the mutual effect described earlier. 
+First, we start by learning the DPD coefficients for the most extreme IMD sub-band, then after injecting its DPD cancellation signal, the emissions at other sub-bands are raised a little above their original levels due to the mutual effect described earlier. 
 In the case that the IM3+ is the most extreme, learning begins there. Then, the DPD learning may switch to the IM3- sub-band, which then also affects the IM3+ sub-band. 
 That is why an extra iteration may be required at previously learned sub-bands so that the spurious emissions are all reduced to appropriate levels. This will be demonstrated in the \textsc{Warp}Lab experimental results in Section \ref{sec:WARPLabResults}.
 
@@ -307,19 +307,19 @@ Consequently, the DPD block-adaptive parameter learning update then reads
 \end{align}
 \normalsize
 where $\tilde{y}_{IM3_+}(n)$ denotes the baseband equivalent observation of the PA output at the IM3+ sub-band with the current DPD coefficients, and $\textbf{e}^{+*}(m)$ refers to the element-wise conjugated error signal vector, while $\bar{\textbf{U}}^+(m)$ denotes the filter input data matrix, all within the processing block $m$. 
-The obtained new DPD coefficients $\bar{\boldsymbol{\alpha}}^+(m+1)$ are then applied on the next block of samples, as illustrated in \cite{Asilomar2015}.
+The obtained new DPD coefficients $\bar{\boldsymbol{\alpha}}^+(m+1)$ are then applied to the next block of samples, as illustrated in \cite{Asilomar2015}.
 
 In order to reduce the hardware complexity of the DPD, a sequential learning of the DPD coefficients is adopted in this paper instead of learning the DPD coefficients for all the nonlinearity orders concurrently. 
 The idea is to first train the DPD for the third-order coefficient, and after injecting the scaled third-order basis function at the target IM3 sub-band, we start training for the fifth-order coefficient using the residual IMD at the target sub-band, and so on. 
 This proposed learning algorithm has two advantages. 
-The first is that only one hardware module needs to be used for training all the DPD nonlinearity orders thus reducing the hardware overhead due to DPD learning, which is an important aspect especially for small devices. 
+The first is that only one hardware module needs to be used for training all the DPD nonlinearity orders thus reducing the hardware overhead due to DPD learning, which is an important aspect, especially for small devices. 
 The second advantage is that we can stop training the DPD once a sufficient performance is achieved. 
 For example, if after doing the third-order training, the transmitter already satisfies the emission limits, then there is no need to train the DPD for higher orders. 
 This will save the complexity in both the DPD training phase and in the actual DPD filtering as well.
 
 However, for fast and smooth learning of the proposed sub-band DPD coefficients, a basis function orthogonalization procedure was proposed earlier in \cite{TMTT_SubbandDPD}. 
 In this paper, we use an orthogonalization procedure which allows us to learn the DPD coefficients with different orders sequentially instead of concurrently. 
-The idea of the orthogonalization and learning procedure in this paper is to first generate the third-order basis function and train the DPD for this basis function. 
+The idea of the orthogonalization and learning procedure in this paper is to generate the third-order basis function and train the DPD for this basis function. 
 Then the projection of the third-order basis function onto the fifth-order basis function is subtracted from the fifth-order basis function in order to obtain the new orthogonalized fifth-order basis function, which is then used to train the DPD for the fifth-order nonlinearity, and so on. 
 Once the spurious emissions satisfy the emission regulations, the DPD training is stopped to save further higher-order processing that may not be required, depending on the transmission scenario and TX power level. 
 Using the standard vector dot product, the new orthogonalized basis functions $v^\pm_q(n)$ used for DPD learning thus read
@@ -385,7 +385,7 @@ If we were to start closer to the final coefficient, there would be less change 
 We propose storing the final coefficients from various transmit scenarios. 
 Then, whenever the same transmit scenario is used again, we can retrain by starting from the previous value. The previous coefficients should be similar, but retraining allows us to overcome possible variations due to temperature, power levels, etc. 
 
-If we slightly change a TX parameter such as the gain of the PA so that we are at a new scenario, it may not be necessary to start our training from zero. Instead, as we collect DPD coefficients from a variety of scenarios, we can perform a linear interpolation to fill in the blanks. By starting the DPD training from an interpolated guess, we can reduce the training time for new scenarios.
+If we slightly change a TX parameter such as the gain of the PA so that we are in a new scenario, it may not be necessary to start our training from zero. Instead, as we collect DPD coefficients from a variety of scenarios, we can perform a linear interpolation to fill in the blanks. By starting the DPD training from an interpolated guess, we can reduce the training time for new scenarios.
 
 \section{Overall DPD System Flow}
 \label{sec:SystemFlow}
@@ -397,7 +397,7 @@ If we slightly change a TX parameter such as the gain of the PA so that we are a
 	\label{fig:SystemFlowChart}
 \end{figure}
 In this section, the overall flow of the proposed DPD processing is summarized and presented, thus putting all the bits and pieces together. 
-{\color{red}In Figure \ref{fig:blockdiagram}, we present the system architecture for the DPD learning. This architecture shows the lower-level algorithm for performing the DPD learning. This architecture will be used in a method shown by the higher-level flow chart in Fig. \ref{fig:SystemFlowChart} which presents the overall DPD system processing including the iterative IMD learning, sequential learning for the higher nonlinearity orders, and the speed-up methods.}
+{\color{red}In Figure \ref{fig:blockdiagram}, we introduce the system architecture for the DPD learning. This architecture shows the lower-level algorithm for performing the DPD learning. This architecture will be used in a method shown by the higher-level flow chart in Fig. \ref{fig:SystemFlowChart} which presents the overall DPD system processing including the iterative IMD learning, sequential learning for the higher nonlinearity orders, and the speed-up methods.}
 
 The system begins by applying stored coefficients if they are available. 
 If they are not available, the system will interpolate from other previously stored values if possible or set the DPD coefficients to zero. 
@@ -409,14 +409,14 @@ In all the learning phases, the DPD learning rate $\mu$ is varied according to t
 
 Once the spurious emission is below the threshold, we search for another spur that is above the limit. If there is one, we will similarly train on that spur. We then begin the search again realizing that it is possible that a previously trained spur may no longer meet the requirements due to the mutual effects of one DPD application on the other. In the case that the DPD can not sufficiently suppress the spurious emission below the limit, we lower the transmit power and begin again. Whenever all spurs are under the limit, the coefficients can be stored in the memory.
 This serves as a starting point for whenever the transmission scenarios are repeated and for interpolation of other values. 
-In the next section, comprehensive experimental results are presented using the \textsc{Warp}Lab setup demonstrating the effectiveness of the proposed DPD solution.
+In the next section, experimental results are presented using the \textsc{Warp}Lab setup demonstrating the effectiveness of the proposed DPD solution.
 
 %\import{./}{Section_WarpLabResults.tex}
 \section{\textsc{Warp}Lab Results}
 \label{sec:WARPLabResults}
 The methods presented previously in the paper were tested using the \textsc{Warp}Lab framework on the \textsc{Warp}v3 board. 
 \textsc{Warp} is a software-defined radio platform that allows for rapid prototyping by interfacing with \textsc{Matlab} to perform the baseband signal processing  \cite{warpProject}. 
-{\color{red} The \textsc{Warp} board is similar to other SDR boards like the popular \textsc{Usrp} boards from Ettus Research/National Instruments in that they allow for rapid prototyping via software such at \textsc{Matlab}. The \textsc{Warp} board is however superior for our purposes in that, unlike the \textsc{Usrp}, it includes a PA.}
+{\color{red} The \textsc{Warp} board is similar to other SDR boards like the popular \textsc{Usrp} boards from Ettus Research/National Instruments in that they allow for rapid prototyping via software such as \textsc{Matlab}. The \textsc{Warp} board is however superior for our purposes in that, unlike the \textsc{Usrp}, it includes a PA.}
 A photo of the experimental setup is shown in Fig. \ref{fig:exp_setup}. 
 For these experiments, the DPD processing is done on the host CPU, but the broadcasting is done on the \textsc{Warp} radio hardware which includes the Maxim MAX2829 transceiver and the Anadigics AWL6951 PA.
 
@@ -431,7 +431,7 @@ For these experiments, the DPD processing is done on the host CPU, but the broad
 \subsection{IM3$\pm$ Iterations}
 We began by testing the iterative method presented in Section \ref{sec:Analysis}. 
 An LTE uplink signal was generated in \textsc{Matlab} with two non-contiguous carriers. 
-One carrier was 3 MHz and the other was 1.4 MHz. 
+One carrier was 3 MHz, and the other was 1.4 MHz. 
 Both carriers had 64 QAM subcarrier modulation. 
 The frequency domain results at each iteration are shown in Fig. \ref{fig:RightThenLeft}. 
 The IM3+ spur was trained first using seventh-order DPD processing, and suppression was achieved as evident in the red curve. 
@@ -500,7 +500,7 @@ When it is below the threshold ($\gamma$) of 0.05 (shown in red) more than 5 tim
 This change of $\mu$ is denoted by the dashed line. 
 The values were determined experimentally to what worked well for a variety of scenarios as determined by the authors. 
 
-We then tested the concept of starting the DPD coefficient at a value based off the interpolation of other trained values. 
+We then tested the concept of starting the DPD coefficient at a value based on the interpolation of other trained values. 
 When using \textsc{Warp}Lab, there is an RF gain parameter that sets the gain for the PA. This value is an integer between zero and sixty-three with approximately half a dB of gain per integer increase of this parameter. We started with an RF gain parameter of 45 where we trained from a starting point of zero. Then, we increased the RF gain to 55 where we again trained from 0. At each, the coefficients converged smoothly with sufficient suppression. 
 
 We then choose to work at an RF gain of 50. We linearly interpolated from the two values previously stored. We then started training from this point. The training is shown in Figure \ref{fig:Interpolate}. Based off the sequential, LMS training, a small update to the interpolation guess is made. 
@@ -516,7 +516,7 @@ We then choose to work at an RF gain of 50. We linearly interpolated from the tw
 As we continue to transmit under various conditions, the interpolations become more accurate. Eventually, a complete table of DPD coefficients is formed. Then whenever we need to broadcast, we can simply load the previous coefficients and quickly update them to account for small fluctuations if needed. 
 
 \subsection{Full System Verification}
-We then put everything together in \textsc{Warp}Lab to follow the process shown in Figure \ref{fig:SystemFlowChart} where multiple spurs need to be under a threshold. The previously discussed speed-up methods are applied in the training process. Two LTE carriers are broadcast. The two carriers are set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable in the \textsc{Warp} board's 40 MHz RF Bandwidth. For this experiment, we set a threshold that the spurs must be 35 dB below the main carriers. The results are plotted in the Figure \ref{fig:IM5}.
+We then put everything together in \textsc{Warp}Lab to follow the process shown in Figure \ref{fig:SystemFlowChart} where multiple spurs need to be under a threshold. The previously discussed speed-up methods are applied in the training process. Two LTE carriers are broadcast. The two carriers are set to be 1.4 MHz LTE uplink signals spaced 6 MHz apart. This allowed the IM5 spurs to be observable in the \textsc{Warp} board's 40 MHz RF Bandwidth. For this experiment, we set a threshold that the spurs must be 35 dB below the main carriers. The results are plotted in Figure \ref{fig:IM5}.
 
 \begin{figure}
 	\centering
@@ -575,7 +575,7 @@ We assume this to be a new configuration where we start with no know coefficient
 
 
 \section{Conclusion}
-In this paper an iterative, multi sub-band DPD learning algorithm has been presented that can suppress the IM3 and IM5 spurious emissions. 
+In this paper, an iterative, multi sub-band DPD learning algorithm has been presented that can suppress the IM3 and IM5 spurious emissions. 
 A sequential learning procedure where higher nonlinearity orders were added one at a time was also presented in order to reduce the complexity and add flexibility to the DPD solution. 
 Additionally, the convergence speed of the proposed DPD has been improved by two methods, while not sacrificing the DPD performance. 
 The first used a variable learning rate which switches from high speed to lower speed once the loop becomes close to convergence. 
