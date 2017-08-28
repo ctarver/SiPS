@@ -132,9 +132,6 @@ This sort of frequency-agile system has been adopted in protocols and standards 
 For cases where spectrum is aggregated in a non-continuous manner, challenges arise in the radio frontend design. 
 In particular, the power amplifier (PA) becomes problematic. 
 The PA is inherently a nonlinear device \cite{Ghannouchi09}, and whenever non-contiguous signals pass through this nonlinearity they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum as illustrated in Figure \ref{fig:PSD}. {\color{red} For example, if there exists carriers at frequencies $f_1$ and $f_2$, there will be a third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
-
-
-{\color{red} The undesirable effects from the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}.}
 These spurious emissions or ``spurs" could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
 These IMDs can be severe and violate emission requirements in standards such as the 3GPP LTE-Advanced or other FCC standards    \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
 
@@ -147,7 +144,8 @@ These IMDs can be severe and violate emission requirements in standards such as 
 	\label{fig:PSD}
 \end{figure}
 
-To avoid violating the strict emission requirements in such scenarios, devices may need to considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
+{\color{red} The undesirable effects from the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}. Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by limiting the peak power. However, this does nothing to try to actually linearize the PA response. So although it may help, it is not usually enough.} 
+In conjuction with CFR, to avoid violating the strict emission requirements, devices may need to also considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
 However, reducing the transmit power in order to satisfy the emission mask will necessarily reduce the uplink coverage and the energy efficiency of the PA. 
  \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz,Katz16}. 
 
@@ -163,7 +161,7 @@ However, most DPD solutions do not completely consider the carrier aggregation s
 For example, in \cite{S.A.BassamOct.2011}, the effects of intermodulation are considered, but only the bandwidth around the main carrier is linearized. 
 
 To combat this, the authors introduced a sub-band DPD method in \cite{ICASSP2014}. 
-However, the third-order IMD (IM3) sub-bands were considered separately while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
+However, the IM3 sub-bands were considered separately while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
 An \textsc{fpga} implementation of this solution has also been presented by the authors in \cite{Asilomar2015} demonstrating real-time processing of the adaptive DPD learning solution.
 
 An extension of the DPD solution in \cite{ICASSP2014,Asilomar2015} was proposed in \cite{Tarver16}, where an iterative learning algorithm is used between the right and left IM3 sub-bands until they are both properly suppressed. 
