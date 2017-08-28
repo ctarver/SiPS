@@ -40,7 +40,7 @@ Thank you for your overview.
 
 The notation is not perfect. However, we choose to remain consistent with the notation we've adopted in previous publications. We did add at the initial use of the IM3 notation references to the frequencies to link the two notations to help avoid any confusion:
 
-{\color{red} For example, if there exists carriers at frequencies $f_1$ and $f_2$, there will be a third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
+{\color{red} For example, if carriers exist at frequencies $f_1$ and $f_2$, there will be third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
 
 
 
@@ -49,7 +49,7 @@ The notation is not perfect. However, we choose to remain consistent with the no
 \paragraph{Response:}
 This comment is a valuable critique of the paper. We add the following statement to the introduction to further motivate the need for DPD by highlighting that the PAPR of modern signals is not friendly with PAs. 
  
-{\color{red} The undesirable effects from the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR). Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at a cost of a poorer error-vector magnitude. So although it may help, it may not be enough .} 
+{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}. Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at the cost of a poorer error-vector magnitude. So although it may help, it may not be enough \cite{CFR}.} 
 
 \paragraph{Comment 2:}\textit{IMD/Intermodulation's/Third order non-linearities are mixes, may be reduce the complexity and stick to one of them.}
 \paragraph{Response:}
