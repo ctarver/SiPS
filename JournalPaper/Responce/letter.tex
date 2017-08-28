@@ -20,7 +20,7 @@ Dear editors and anonymous reviewers,\\
 
 This revised manuscript entitled ``Low-complexity, Multi Sub-band Digital Predistortion: Novel Algorithms and SDR Verification" is a revised version of the manuscript VLSI-D-17-00269. 
 Thank you reviewers and editors for the time and effort spent on our paper. We appreciate the thoughtful comments.
-We have responded to these comments one by one in this letter. 
+We have responded to each of these in this letter. 
 We have also updated the manuscript accordingly including a block diagram. 
 All major changes to the manuscript are written in {\color{red} red font} while other, smaller-scale additions and corrections of typos have also been implemented.\\
 
@@ -40,7 +40,7 @@ Thank you for your overview.
 
 The notation is not perfect. However, we choose to remain consistent with the notation we've adopted in previous publications. We did add at the initial use of the IM3 notation references to the frequencies to link the two notations to help avoid any confusion:
 
-{\color{red} For example, if carriers exist at frequencies $f_1$ and $f_2$, there will be third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
+{\color{red} For example, if carriers exist at radio frequencies $f_1$ and $f_2$, there will be third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
 
 
 
@@ -49,11 +49,11 @@ The notation is not perfect. However, we choose to remain consistent with the no
 \paragraph{Response:}
 This comment is a valuable critique of the paper. We add the following statement to the introduction to further motivate the need for DPD by highlighting that the PAPR of modern signals is not friendly with PAs. 
  
-{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}. Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at the cost of a poorer error-vector magnitude. So although it may help, it may not be enough \cite{CFR}.} 
+{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR). Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at the cost of a poorer error-vector magnitude. So although it may help, it may not be enough.} 
 
 \paragraph{Comment 2:}\textit{IMD/Intermodulation's/Third order non-linearities are mixes, may be reduce the complexity and stick to one of them.}
 \paragraph{Response:}
-Thank you for pointing out the inconsistency and need for clarity. We have tried to resolve this throughout the paper. It is important to clarify the scope of each term. Intermodulation refers to the general phenomenon of the mixing of multiple carriers due to the nonlinearities. Intermodulation distortions (IMDs) is still a general term that refers to any of the distortions caused by the intermodulation. In this paper, we only examine the spurious intermodulation distortion emissions. IM3, IM5 refers to specific intermodulation distortions. These are found via $n f_1 - m f_2$ where $n,m$ are positive integers and $f_1, f_2$ are the frequencies of the main carriers. IM3s occur when $n+m = 3$. Similarly for other IMDs. Each IMD contains a signal created as the sum of various nonlinear orders. For example, the IM3 spur contains 3rd order, 5th order, 7th order, etc. terms. Assuming there's no memory for simplicity, $y_{IM3+} = u_3^{3+} + u_5^{3+} + u_7^{3+} + ...$ where the nonlinear basis functions, $u$, are defined starting at Equation 8.
+Thank you for pointing out the inconsistency and need for clarity. We have tried to resolve this throughout the paper. It is important to clarify the scope of each term. Intermodulation refers to the general phenomenon of the mixing of multiple carriers due to the nonlinearities. Intermodulation distortions (IMDs) is still a general term that refers to any of the distortions caused by the intermodulation. In this paper, we only examine the spurious intermodulation distortion emissions. IM3, IM5 refers to specific intermodulation distortions. These are found via $n f_1 - m f_2$ or  $n f_2 - m f_1$ where $n,m$ are positive integers and $f_1, f_2$ are the frequencies of the main carriers. IM3s occur when $n+m = 3$. Similarly for other IMDs. Each IMD contains a signal created as the sum of various nonlinear orders. For example, the IM3 spur contains 3rd order, 5th order, 7th order, etc. terms. Assuming there's no memory for simplicity, $y_{IM3+} = u_3^{3+} + u_5^{3+} + u_7^{3+} + ...$ where the nonlinear basis functions, $u$, are defined starting at Equation 8. Whenever we mix the terms, we are talking about different things. For example, The IM3 is a spur and the third-order nonlinearity is a component of that spur. 
 
 \paragraph{Comment 3:}\textit{The DPD curve achieved through the PA feedback path, nothing mentioned in the Document.}
 \paragraph{Response:}
@@ -62,7 +62,7 @@ We have added a block diagram to help show the relationship between the feedback
 \paragraph{Comment 4:}\textit{Nothing mentioned about currents and Efficiency. Document Missing technical terms. could be better if we add top level block diagram.
 }
 \paragraph{Response:}
-It would be beneficial to study the efficiency. However, that is outside the scope of this work. Instead, we reference the reader to multiple sources that show that the PA operates more efficiently in the nonlinear, saturation region and that DPD can allow for this sort of transmission while reducing the likelihood of violating the emissions masks. 
+It would be beneficial to study the currents and efficiency. However, that is outside the scope of this work. Instead, we reference the reader to multiple sources that show that the PA operates more efficiently in the nonlinear, saturation region and that DPD can allow for this sort of transmission while reducing the likelihood of violating the emissions masks. 
 
 We have attempted to add more technical terms throughout such as the reference to PAPR. 
 

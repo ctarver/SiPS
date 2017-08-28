@@ -124,7 +124,7 @@ A \textsc{Warp}Lab implementation of the proposed DPD is also shown with excelle
 
 \section{Introduction}
 Mobile devices need to access more radio spectrum to meet the increasing data-rate demands of mobile users. 
-This is particularly challenging when we compound this with the growing number of wireless devices  \cite{Cisco16}.
+This is particularly challenging when we compound this with the growing number of active wireless devices in the world today \cite{Cisco16}.
 This leads to what is referred to as spectrum scarcity and fragmentation \cite{Staple04,Federated17}. 
 In scenarios where there is little available bandwidth, it may be necessary to aggregate spectrum opportunistically, potentially across multiple bands non-contiguously. 
 This sort of frequency-agile system has been adopted in protocols and standards such as in LTE-Advanced with carrier aggregation \cite{wannstrom_2013} and will likely also play a role in 5G communications \cite{Khan2014}.  
@@ -132,7 +132,7 @@ This sort of frequency-agile system has been adopted in protocols and standards 
 For cases where spectrum is aggregated in a non-continuous manner, challenges arise in the radio frontend design. 
 In particular, the power amplifier (PA) becomes problematic. 
 The PA is inherently a nonlinear device \cite{Ghannouchi09}, and whenever non-contiguous signals pass through this nonlinearity, they intermodulate creating intermodulation distortion (IMD) components throughout the nearby spectrum as illustrated in Figure \ref{fig:PSD}. 
-{\color{red} For example, if carriers exist at frequencies $f_1$ and $f_2$, there will be third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
+{\color{red} For example, if carriers exist at radio frequencies $f_1$ and $f_2$, there will be third-order IMD products (IM3s) at frequencies of $2f_1 - f_2$ and $2f_2 - f_1$.}
 These spurious emissions or ``spurs" could interfere with other users or with a device's own receiver in a frequency-division duplexing scenario \cite{Park13}. 
 If severe enough, they may violate emission requirements in standards such as the 3GPP LTE-Advanced or other FCC standards  \cite{Commag_abdelaziz,3GPP_CA_Emissions_1,3GPP_CA_Emissions_2,LaehteensuoMay2013}. 
 
@@ -171,10 +171,10 @@ Moreover, in \cite{TMTT_SubbandDPD}, higher nonlinearity orders were introduced 
 
 In this paper, we extend the work from \cite{Tarver16} to include processing for the fifth-order IMD products (IM5) and include new interpolation based speed-up methods. In summary, this paper includes:
 \begin{itemize}
-	\item An iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them. This improves the flexibility and potentially reduces complexity when compared to a full-band DPD system in that learning can be focused only on sub-bands that are in violation of emission limits. 
+	\item An iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them. This improves the flexibility and potentially reduces complexity when compared to a full-band DPD system in that learning can be focused only on sub-bands that are in violation of emission limits and only a single RF feedback path is necessary. 
 	\item The learning of the higher-order nonlinearities in each sub-band is done sequentially, one basis function at a time in ascending order. 
 	This has the advantage of reducing the hardware complexity by essentially using one learning module for all the nonlinearity orders. 
-	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity.
+	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity. However, this comes at a cost of additional latency. 
 	\item To improve the convergence speed of the proposed solution, two modifications have been adopted in this paper. 
 	The first is using a variable learning rate during the DPD coefficient learning to have a fast convergence during the initial phase of the learning while not sacrificing the steady-state error. 
 	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning anytime the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
@@ -243,10 +243,11 @@ This represents the theoretical basis of the mutual effect the IM3+ sub-band DPD
 In \cite{ICASSP2014}, the learning of the DPD parameter $\alpha$, for the IM3+ sub-band, for example, was formulated to minimize the correlation between the IMD at the considered IM3 sub-band and the distortion basis $x_2^*(n)x_1^2(n)$. 
 This correlation minimization will eventually minimize the distortion at the considered sub-band effectively, as demonstrated in \cite{ICASSP2014,Asilomar2015}. 
 However, optimizing the DPD parameter $\alpha$ to minimize the power at the IM3+ sub-band, will affect the IM3- sub-band as well, as shown in (\ref{eq:IM3_+}) and (\ref{eq:IM3_-}). 
-That is why an iterative sub-band DPD learning is proposed in this paper, in the case multiple IMD sub-bands are required to be mitigated effectively. 
+
+That is why an iterative sub-band DPD learning is proposed in this paper in the case that multiple IMD sub-bands are required to be mitigated effectively. 
 First, we start by learning the DPD coefficients for the most extreme IMD sub-band, then after injecting its DPD cancellation signal, the emissions at other sub-bands are raised a little above their original levels due to the mutual effect described earlier. 
 In the case that the IM3+ is the most extreme, learning begins there. Then, the DPD learning may switch to the IM3- sub-band, which then also affects the IM3+ sub-band. 
-That is why an extra iteration may be required at previously learned sub-bands so that the spurious emissions are all reduced to appropriate levels. This will be demonstrated in the \textsc{Warp}Lab experimental results in Section \ref{sec:WARPLabResults}.
+An extra iteration may be required at previously learned sub-bands so that the spurious emissions are all reduced to appropriate levels. This will be demonstrated in the \textsc{Warp}Lab experimental results in Section \ref{sec:WARPLabResults}. This method also has a practical, hardware benefit in that only a single RF feedback path is necessary. The downconverter in the feedback path will simply be re-tuned to each of the sub-bands during training. 
 
 In the following sections, modifications are introduced to the proposed sub-band DPD in order to reduce the complexity, improve the convergence speed, or both. 
 These aspects are particularly important for mobile devices, which is the main scope of this work.
@@ -340,8 +341,8 @@ Two algorithm modifications are thus proposed in the next section for improving 
 %\import{./}{Section_Speedup.tex}
 \begin{figure*}[]
 	\centering
-	\includegraphics[]{blockdiagram}
-	\caption{Block diagram of the system architecture. }
+	\includegraphics[width=0.7\textwidth]{blockdiagram}
+	\caption{Block diagram of the system architecture. Here, the I$m^{th}$ nonlinear order $IMi$ sub-band is being trained.}
 	\label{fig:blockdiagram}
 \end{figure*}
 \section{Improving Convergence Speed of the Proposed DPD}
@@ -485,7 +486,7 @@ To overcome this, we tested the previously presented methods for speeding up the
 
 \begin{figure}[t] 
 	\centering
-	\includegraphics[width=0.9\columnwidth]{Convergence_Mu}
+	\includegraphics[width=\columnwidth]{Convergence_Mu_new}
 	\caption{Correlation vs. block index during DPD training. 
 		As training progresses the correlation decreases. 
 		Once it is below the threshold for a total number of times greater than the confidence metric, we change to the lower learning rate.}
