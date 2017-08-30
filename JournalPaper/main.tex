@@ -140,12 +140,12 @@ If severe enough, they may violate emission requirements in standards such as th
 	\centering
 	%\vspace{0.5cm}
 	\centerline{\includegraphics[width=\columnwidth]{PSD.pdf}}
-	\caption[]{Power spectral density of a non-contiguous signal after being applied through a nonlinear PA.
-		Nonlinearity orders up to the seventh are shown in the third-order and fifth-order IMD products (IM3 and IM5).}
+	\caption[]{Power spectral density of a non-contiguous signal after being applied through a nonlinear PA. {\color{red} Intermodulation of the main carriers, $x_1$ and $x_2$, cause distortion throughout the nearby spectrum. For example, the third-order intermodulation distortion products (IMDs) are shown as IM3- and IM3+. Each IMD is the sum of multiple nonlinearity components. Here we show the contribution of each nonlinear order up to the seventh in each of the IMD products.}}
 	\label{fig:PSD}
 \end{figure}
 
-{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}. Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at the cost of a poorer error-vector magnitude. So although it may help, it may not be enough \cite{CFR}.} 
+{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR) \cite{Ghannouchi09}. Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, CFR doesn't correct for the nonlinearities of the PA and may come at the cost of a poorer error-vector magnitude \cite{CFR}.} 
+
 In conjunction with CFR, to avoid violating the strict emission requirements, devices may need to also considerably back off their transmit power from the nominal maximum value (e.g., +23 dBm in 3GPP LTE uplink) so that the PA operates in a more linear region. 
 However, reducing the transmit power in order to satisfy the emission mask will necessarily reduce the uplink coverage and the energy efficiency of the PA. 
  \cite{P.RoblinJan.2008,J.KimJan.2013,S.A.BassamAug.2012,ICASSP2014,Commag_abdelaziz,Katz16}. 
@@ -155,26 +155,26 @@ DPD is a signal processing technique that requires sampling the output of the PA
 This can have the effect of dramatically reducing spurious emissions and other nonlinear effects \cite{Katz16}.
 
 However, to cancel a nonlinearity, we have to also be able to observe it. For many carrier aggregation scenarios, the carriers may be spaced hundreds of MHz apart. 
-This would lead to their IMDs products being spaced even farther apart so that the observation bandwidth necessary to mitigate the spurious emissions becomes infeasible for many analog-to-digital converters (ADCs) and radio-frequency (RF) downconverters \cite{S.A.BassamOct.2011}. 
+This would lead to their {\color{red}IMD} products being spaced even farther apart so that the observation bandwidth necessary to mitigate the spurious emissions becomes infeasible for many analog-to-digital converters (ADCs) and radio-frequency (RF) downconverters \cite{S.A.BassamOct.2011}. 
 
 This issue is quickly becoming more prevalent in that carrier aggregation is now almost commonplace. Since its 2011 debut in LTE Release 10, it has made its way from the standards down to commercial implementations. Many networks already provide support for up to three carriers on the downlink \cite{AT&T}, and many consumer devices also support it with system-on-chips such as the Snapdragon 835 supporting four downlink carriers and two uplink carriers \cite{Qual835}. 
 However, most DPD solutions do not completely consider the carrier aggregation scenario. 
 For example, in \cite{S.A.BassamOct.2011}, the effects of intermodulation are considered, but only the bandwidth around the main carrier is linearized. 
 
 To combat this, the authors introduced a sub-band DPD method in \cite{ICASSP2014}. 
-However, the IM3 sub-bands were considered separately while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
+However, the {\color{red}IM3} sub-bands were considered separately while not taking into consideration the mutual effect of each of the IM3 sub-band DPDs over the other. 
 An \textsc{fpga} implementation of this solution has also been presented by the authors in \cite{Asilomar2015} demonstrating real-time processing of the adaptive DPD learning solution.
 
 An extension of the DPD solution in \cite{ICASSP2014,Asilomar2015} was proposed in \cite{Tarver16}, where an iterative learning algorithm is used between the right and left IM3 sub-bands until they are both properly suppressed. 
 A \textsc{Warp}Lab implementation of an iterative version of this higher order sub-band DPD was also presented  with additional ideas added to reduce the complexity and/or improve the learning speed of the proposed DPD. 
 Moreover, in \cite{TMTT_SubbandDPD}, higher nonlinearity orders were introduced in addition to the third-order nonlinearity processing in \cite{ICASSP2014,Asilomar2015}. 
 
-In this paper, we extend the work from \cite{Tarver16} to include processing for the fifth-order IMD products (IM5) and include new interpolation based speed-up methods. In summary, this paper includes:
+In this paper, we extend the work from \cite{Tarver16} to include processing for the fifth-order {\color{red}IMD} products (IM5) and include new interpolation based speed-up methods. In summary, this paper includes:
 \begin{itemize}
-	\item An iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them. This improves the flexibility and potentially reduces complexity when compared to a full-band DPD system in that learning can be focused only on sub-bands that are in violation of emission limits and only a single RF feedback path is necessary. 
+	\item An iterative version of the previously proposed sub-band DPD. This solution iterates between the different spurious components, such as the IM3+, IM3-, IM5+, and IM5- until a satisfactory performance is achieved for each of them. This improves the flexibility and potentially reduces complexity when compared to a full-band DPD system in that learning can be focused only on sub-bands that are in violation of emission limits and only a single RF feedback path is necessary. {\color{red} This comes at a cost of additional latency when compared to full-band DPD.}
 	\item The learning of the higher-order nonlinearities in each sub-band is done sequentially, one basis function at a time in ascending order. 
 	This has the advantage of reducing the hardware complexity by essentially using one learning module for all the nonlinearity orders. 
-	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity. However, this comes at a cost of additional latency. 
+	An additional flexibility advantage is that we can stop adding higher orders in the learning phase once a sufficient spurious emission suppression is achieved, thus further reducing the complexity. {\color{red}However, this comes at a cost of additional latency.}
 	\item To improve the convergence speed of the proposed solution, two modifications have been adopted in this paper. 
 	The first is using a variable learning rate during the DPD coefficient learning to have a fast convergence during the initial phase of the learning while not sacrificing the steady-state error. 
 	The second modification is that the DPD coefficients are stored once they are converged. When transmitting, the previous acts as a starting point for learning anytime the same carrier configuration is transmitted again. For transmissions with new configurations, we can interpolate from stored values to help start training from a value close to the final value. 
@@ -247,7 +247,7 @@ However, optimizing the DPD parameter $\alpha$ to minimize the power at the IM3+
 That is why an iterative sub-band DPD learning is proposed in this paper in the case that multiple IMD sub-bands are required to be mitigated effectively. 
 First, we start by learning the DPD coefficients for the most extreme IMD sub-band, then after injecting its DPD cancellation signal, the emissions at other sub-bands are raised a little above their original levels due to the mutual effect described earlier. 
 In the case that the IM3+ is the most extreme, learning begins there. Then, the DPD learning may switch to the IM3- sub-band, which then also affects the IM3+ sub-band. 
-An extra iteration may be required at previously learned sub-bands so that the spurious emissions are all reduced to appropriate levels. This will be demonstrated in the \textsc{Warp}Lab experimental results in Section \ref{sec:WARPLabResults}. This method also has a practical, hardware benefit in that only a single RF feedback path is necessary. The downconverter in the feedback path will simply be re-tuned to each of the sub-bands during training. 
+An extra iteration may be required at previously learned sub-bands so that the spurious emissions are all reduced to appropriate levels. This will be demonstrated in the \textsc{Warp}Lab experimental results in Section \ref{sec:WARPLabResults}. {\color{red}This method also has a practical, hardware benefit in that only a single RF feedback path is necessary. The downconverter in the feedback path will simply be re-tuned to each of the sub-bands during training.}
 
 In the following sections, modifications are introduced to the proposed sub-band DPD in order to reduce the complexity, improve the convergence speed, or both. 
 These aspects are particularly important for mobile devices, which is the main scope of this work.
@@ -417,7 +417,7 @@ In the next section, experimental results are presented using the \textsc{Warp}L
 \label{sec:WARPLabResults}
 The methods presented previously in the paper were tested using the \textsc{Warp}Lab framework on the \textsc{Warp}v3 board. 
 \textsc{Warp} is a software-defined radio platform that allows for rapid prototyping by interfacing with \textsc{Matlab} to perform the baseband signal processing  \cite{warpProject}. 
-{\color{red} The \textsc{Warp} board is similar to other SDR boards like the popular \textsc{Usrp} boards from Ettus Research/National Instruments in that they allow for rapid prototyping via software such as \textsc{Matlab}. The \textsc{Warp} board is however superior for our purposes in that, unlike the \textsc{Usrp}, it includes a PA.}
+{\color{red} The \textsc{Warp} board is similar to other SDR boards like the popular \textsc{Usrp} boards from Ettus Research/National Instruments in that they allow for rapid prototyping via software such at \textsc{Matlab}. In order to study the DPD performance, a PA is needed as part of the SDR platform. The USRP does not contain an integrated PA. However, the WARP platform contains a standard on-board PA which makes it ideal for algorithm verification.}
 A photo of the experimental setup is shown in Fig. \ref{fig:exp_setup}. 
 For these experiments, the DPD processing is done on the host CPU, but the broadcasting is done on the \textsc{Warp} radio hardware which includes the Maxim MAX2829 transceiver and the Anadigics AWL6951 PA.
 

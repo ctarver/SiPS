@@ -49,11 +49,14 @@ The notation is not perfect. However, we choose to remain consistent with the no
 \paragraph{Response:}
 This comment is a valuable critique of the paper. We add the following statement to the introduction to further motivate the need for DPD by highlighting that the PAPR of modern signals is not friendly with PAs. 
  
-{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR). Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, this does nothing to try to actually linearize the PA response and comes at the cost of a poorer error-vector magnitude. So although it may help, it may not be enough.} 
+{\color{red} The undesirable effects of the PA nonlinearities are exacerbated by modern, multicarrier signals such as OFDM due to their high peak-to-average power ratio (PAPR). Techniques such as crest factor reduction (CFR) can help reduce the PAPR of these signals by many dB by limiting the peak power through clipping and filtering. However, CFR doesn't correct for the nonlinearities of the PA and may come at the cost of a poorer error-vector magnitude.} 
 
 \paragraph{Comment 2:}\textit{IMD/Intermodulation's/Third order non-linearities are mixes, may be reduce the complexity and stick to one of them.}
 \paragraph{Response:}
-Thank you for pointing out the inconsistency and need for clarity. We have tried to resolve this throughout the paper. It is important to clarify the scope of each term. Intermodulation refers to the general phenomenon of the mixing of multiple carriers due to the nonlinearities. Intermodulation distortions (IMDs) is still a general term that refers to any of the distortions caused by the intermodulation. In this paper, we only examine the spurious intermodulation distortion emissions. IM3, IM5 refers to specific intermodulation distortions. These are found via $n f_1 - m f_2$ or  $n f_2 - m f_1$ where $n,m$ are positive integers and $f_1, f_2$ are the frequencies of the main carriers. IM3s occur when $n+m = 3$. Similarly for other IMDs. Each IMD contains a signal created as the sum of various nonlinear orders. For example, the IM3 spur contains 3rd order, 5th order, 7th order, etc. terms. Assuming there's no memory for simplicity, $y_{IM3+} = u_3^{3+} + u_5^{3+} + u_7^{3+} + ...$ where the nonlinear basis functions, $u$, are defined starting at Equation 8. Whenever we mix the terms, we are talking about different things. For example, The IM3 is a spur and the third-order nonlinearity is a component of that spur. 
+Thank you for pointing out the inconsistency and need for clarity. We have tried to resolve this throughout the paper by more consistently using the term IMD or the specific IMD instead of saying intermodulation or nonlinearity. 
+
+It is also important to clarify the scope of each term. Intermodulation refers to the general phenomenon of the mixing of multiple carriers due to the nonlinearities. Intermodulation distortion (IMD) is still a general term that refers to any of the distortions caused by the intermodulation. In this paper, we only examine the spurious intermodulation distortion emissions. IM3, IM5 refers to specific intermodulation distortions. These are found via $n f_1 - m f_2$ or  $n f_2 - m f_1$ where $n,m$ are positive integers and $f_1, f_2$ are the frequencies of the main carriers. IM3s occur when $n+m = 3$. Other IMDs are found similarly. Each IMD contains a signal created as the sum of various nonlinear orders. For example, the IM3 spur contains 3rd order, 5th order, 7th order, etc. terms. Assuming there's no memory for simplicity, $y_{IM3+} = u_3^{3+} + u_5^{3+} + u_7^{3+} + ...$ where the nonlinear basis functions, $u$, are defined starting at Equation 8. Whenever we mix the terms, we are talking about different things. For example, The IM3 is a spur and the third-order nonlinearity is a component of that spur. 
+We have added an additional explanation to the paper in the caption to Figure 1.
 
 \paragraph{Comment 3:}\textit{The DPD curve achieved through the PA feedback path, nothing mentioned in the Document.}
 \paragraph{Response:}
@@ -62,7 +65,9 @@ We have added a block diagram to help show the relationship between the feedback
 \paragraph{Comment 4:}\textit{Nothing mentioned about currents and Efficiency. Document Missing technical terms. could be better if we add top level block diagram.
 }
 \paragraph{Response:}
-It would be beneficial to study the currents and efficiency. However, that is outside the scope of this work. Instead, we reference the reader to multiple sources that show that the PA operates more efficiently in the nonlinear, saturation region and that DPD can allow for this sort of transmission while reducing the likelihood of violating the emissions masks. 
+It would be beneficial to study the currents and efficiency. 
+Although we have not verified with our own measurements, DPD leads to a reduction in the amount of energy sent in the out-of-band region. Since we are not broadcasting extra power in this region, we anticipate that the device is consuming less power and is more efficient. 
+It is well known in the literature that PAs operate more efficiently in the nonlinear, saturation region. DPD can help to allow for transmission in this more efficient saturation region while reducing the likelihood of violating the emissions masks. 
 
 We have attempted to add more technical terms throughout such as the reference to PAPR. 
 
@@ -72,11 +77,15 @@ The addition of a block diagram is a great suggestion that will enhance the pape
 \section{Response to Reviewer 2}
 \paragraph{Comment 1:}\textit{The first concern is on the iterative processing method. Yes, this method can guarantee better performance. But, how to evaluate the increased latency?}
 \paragraph{Response:}
-This method does not guarantee better performance. This method is used solely for the purpose of reducing hardware complexity. This does comes at the price of increased latency that we try to relax through our speed-up techniques. 
+As we iterate multiple times over individual sub-bands, we can achieve better performance at the cost of increased latency. 
+In some scenarios, it is more than simply getting better performance; to broadcast without back off, the extra iterations may be necessary. 
+The alternative would be to train multiple sub-bands together. However this would require either a very large bandwidth receiver (especially if the carrier spacing is large) or multiple, smaller sub-band feedback receivers. So although we are increasing latency, we are making DPD more feasible by only requiring a single feedback path. 
+The latency isn't ideal, but because we stop in the sequential method after a satisfactory performance is achieved and because of our speed-up methods, it is made more tolerable. Moreover, this latency primarily exists whenever a new scenario is encountered. For broadcasting in previously learned scenarios, using stored coefficients will greatly reduce the amount of time needed for retraining. 
+We have added acknowledgments of the extra latency in the paper.
 
 \paragraph{Comment 2:}\textit{It is mentioned that the learning is based on the serial processing manner for hardware complexity consideration. However, this will further increase the latency.}
 \paragraph{Response:}
-Thank you for the comment. We have tried to add more transparency by adding additional statments throughout acknowledging this weakness in the method. The serial processing does increase latency.
+Thank you for the comment. We have tried to add more transparency by adding additional statements throughout acknowledging this weakness in the method. The serial processing does increase latency.
 	
 \paragraph{Comment 3:}\textit{For the convergence speed up, both adaption and on-the-fly storage are adopted. However, both methods will introduce complexity. Authors should comment on the balance of performance and complexity.}
 \paragraph{Response:}
@@ -88,7 +97,7 @@ In comparison, a small memory for storing old coefficients is mostly only an inc
 \paragraph{Response:}
 Thank you for the comment. We are proud of the work done on real hardware using the WARPLab environment. We would also like to compare this with other implementations. However, it is a significant undertaking to implement on another SDR platform, and time constraints did not allow this. In our case, the WARP board is superiour in that, with a USRP, we would need to add an external PA. We have added a statement about WARP comparing it to a USRP in the paper mentioning this. 
 
-{\color{red} The \textsc{Warp} board is similar to other SDR boards like the popular \textsc{Usrp} boards from Ettus Research/National Instruments in that they allow for rapid prototyping via software such at \textsc{Matlab}. The \textsc{Warp} board is however superior for our purposes in that, unlike the \textsc{Usrp}, it includes a PA.}
+{\color{red} The \textsc{Warp} board is similar to other SDR boards like the popular \textsc{Usrp} boards from Ettus Research/National Instruments in that they allow for rapid prototyping via software such at \textsc{Matlab}. In order to study the DPD performance, a PA is needed as part of the SDR platform. The USRP does not contain an integrated PA. However, the WARP platform contains a standard on-board PA which makes it ideal for algorithm verification.}
 
 \paragraph{Comment 5:}\textit{It is not suggested to have Figure 2 occupy the entire page.}
 \paragraph{Response:}
