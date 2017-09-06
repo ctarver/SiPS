@@ -49,6 +49,8 @@ grestore
 \usepackage{import}
 \usepackage[ruled]{algorithm2e}
 \usepackage{color}
+\PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks]{hyperref}
+
 %
 % \usepackage{mathptmx}      % use Times fonts if available on your TeX system
 %
@@ -252,7 +254,7 @@ An extra iteration may be required at previously learned sub-bands so that the s
 In the following sections, modifications are introduced to the proposed sub-band DPD in order to reduce the complexity, improve the convergence speed, or both. 
 These aspects are particularly important for mobile devices, which is the main scope of this work.
 
-\section{Sequential Learning of IM3 sub-band DPD Coefficients}
+\section{Sequential Learning of IM3 Sub-band DPD Coefficients}
 \label{sec:Sequential_Learning}
 A detailed analysis of the nonlinear distortions at the IM3 and IM5 sub-band has been done in \cite{TMTT_SubbandDPD} when a ninth-order PA is excited with a dual carrier signal as in (\ref{eq:PA_In}). 
 We hereby present the distortion components up to the ninth order at the IM3+ sub-band, which read
@@ -273,7 +275,7 @@ The distortion components up to the ninth order at the IM5+ sub-band read
 u^{5+}_5(n) &= (x_2^*(n))^2x_1^3(n),\\
 u^{5+}_7(n) &= u^{5+}_5(n) \times (4 |x_1(n)|^2 + 3 |x_2(n)|^2),  \\
 u^{5+}_9(n) &= u^{5+}_7(n) \times (10 |x_1(n)|^4 + 6 |x_2(n)|^4 \nonumber\\
-& \quad + 20 |x_1(n)|^2 |x_2(n)|^2),\\
+& \quad + 20 |x_1(n)|^2 |x_2(n)|^2).
 \end{align}
 \normalsize
 Similarly, for the IM5- sub-band, the distortions terms $u^{5-}(n)$ are simply obtained by interchanging $x_1(n)$ and $x_2(n)$.
@@ -394,7 +396,7 @@ If we slightly change a TX parameter such as the gain of the PA so that we are i
 	\centering
 	%\vspace{0.5cm}
 	\centerline{\includegraphics[]{FlowChart1column.pdf}}
-	\caption[]{System flow chart of the proposed iterative sub-band DPD solution with speed-up methods.}
+	\caption[]{System flow chart of the proposed iterative sub-band DPD solution with speed-up methods. The speed-up methods are indicated in \textbf{bold letters}.}
 	\label{fig:SystemFlowChart}
 \end{figure}
 In this section, the overall flow of the proposed DPD processing is summarized and presented, thus putting all the bits and pieces together. 
@@ -522,11 +524,12 @@ We then put everything together in \textsc{Warp}Lab to follow the process shown 
 \begin{figure}
 	\centering
 	\includegraphics[]{IM5Spectrum}
-	\caption{Normalized spectral result when using the iterative method to make sure both IM3 and both IM5 spurious emissions are below the threshold}
+	\caption{Normalized spectral result when using the iterative method to make sure both IM3 and both IM5 spurious emissions are below the threshold.}
 	\label{fig:IM5}
 \end{figure}
 
 \begin{table}
+		\caption{Results of the intermediate training steps in the multi sub-band DPD from Figure \ref{fig:IM5}.}
 	\begin{tabular}{c l c|r r r r}
 		
 		\multicolumn{3}{c|}{Training Step}  & \multicolumn{4}{c}{Result (dB)} \\ 
@@ -556,7 +559,6 @@ We then put everything together in \textsc{Warp}Lab to follow the process shown 
 		10 & IM3- & 5 & -44.6 & -37.5 & -37.0 & -42.5 \\ 
 		
 	\end{tabular} 
-	\caption{Results of the intermediate training steps in the multi sub-band DPD from Figure \ref{fig:IM5}.}
 	\label{tab:IM5}
 \end{table}
 
